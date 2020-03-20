@@ -5,24 +5,31 @@ class Fruit {
     #color = undefined;
 
     constructor(x, y, p) {
-        this.#pixel = p;
-        this.#pos = { x: x*p, y: y*p };
+        if(arguments.length == 1){
+            this.#pixel = x.getPixel();
+            this.#pos = x.getPos();
 
-        this.#color = color(240, 10, 30);
+            this.#color = x.getColor();
+        } else {   
+            this.#pixel = p;
+            this.#pos = { x: x*p, y: y*p };
+
+            this.#color = color(240, 10, 30);
+        }
     }
 
     getPixel() {
-        return this.#pixel;
+        return this.#pixel.valueOf();
     }
     getPos() {
-        return this.#pos;
+        return JSON.parse(JSON.stringify(this.#pos));
     }
     getColor() {
-        return this.#color;
+        return color(this.#color);
     }
 
     setPos(x, y) {
-        this.#pos = { x: x*this.getPixel(), y: y*this.getPixel()};
+        this.#pos = { x: x*this.#pixel, y: y*this.#pixel };
     }
     setColor(c) {
         this.#color = c;

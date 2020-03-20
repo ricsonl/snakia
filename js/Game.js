@@ -21,50 +21,73 @@ class Game {
     }
     
     getPixel(){
-        return this.#pixel;
+        return this.#pixel.valueOf();
     }
     getHeight(){
-        return this.#height;
+        return this.#height.valueOf();
     }
     getWidth(){
-        return this.#width;
+        return this.#width.valueOf();
     }
     getColor(){
-        return this.#color;
+        return color(this.#color);
     }
     getSnake(){
-        return this.#snake;
+        return new Snake(this.#snake);
     }
     getFruit(){
-        return this.#fruit;
+        return new Fruit(this.#fruit);
     }
 
     setColor(c){
         this.#color = c;
     }
 
-    checkStatus(){
-        if (
-            this.getSnake().getBody()[0].x > this.getWidth() ||
-            this.getSnake().getBody()[0].x < 0 ||
-            this.getSnake().getBody()[0].y > this.getHeight() ||
-            this.getSnake().getBody()[0].y < 0 ||
-            this.getSnake().checkCollision()
-        ) {
-            noLoop();
-            console.log('fodase');
+    display() {
+        fill(this.getColor());
+        rect(0, 0, this.getWidth(), this.getHeight());
+
+        this.#fruit.display();
+
+        this.#snake.display();
+        this.#snake.updatePos();
+
+        this.checkStatus();
+    }
+
+    controlSnake(key){
+        this.#snake.control(key);
+    }
+
+    checkSnakeCollision() {
+        let body = this.getSnake().getBody();
+
+        let _x = body[0].x;
+        let _y = body[0].y;
+
+        for (let i = 1; i < body.length - 1; i++) {
+            let segm = body[i];
+            if (segm.x == _x && segm.y == _y ||
+                this.#snake.getBody()[0].x > this.#width ||
+                this.#snake.getBody()[0].x < 0 ||
+                this.#snake.getBody()[0].y > this.#height ||
+                this.#snake.getBody()[0].y < 0
+                ) {
+                return true;
+            }
         }
     }
 
-    display(){
-        fill(this.getColor());
-        rect(0, 0, this.getWidth(), this.getHeight());   
+    checkStatus(){
+        if (this.checkSnakeCollision()) {
+            noLoop();
+            console.log('fodase');
+        }
 
-        this.getFruit().display();
-
-        this.getSnake().display();
-        this.getSnake().updatePos();
-
-        this.checkStatus();
+        let body = this.#snake.getBody();
+        if (JSON.stringify(body[0]) === JSON.stringify(this.#fruit.getPos())) {
+            this.#snake.grow();
+            this.#fruit.setPos(Math.floor(Math.random() * (this.#width - 2) + 2), Math.floor(Math.random() * (this.#height - 2) + 2));
+        }
     }
 }
