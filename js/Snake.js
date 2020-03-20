@@ -7,7 +7,14 @@ class Snake {
 
     constructor(x, y, p){
         this.#pixel = p;
-        this.#body = [{x: x*p, y: y*p}];
+        this.#body = [
+                        { x: x*p, y: y*p }, 
+                        { x: (x-1)*p, y: y*p }, 
+                        { x: (x-2)*p, y: y*p },
+                        { x: (x-3)*p, y: y*p },
+                        { x: (x-4)*p, y: y*p },
+                        { x: (x-5)*p, y: y*p }
+                    ];
         this.#dir = 'R';
 
         this.#color = color(255, 255, 255);
@@ -27,8 +34,8 @@ class Snake {
     }
 
     setBody(x, y) {
-        this.#body[0].x = x;
-        this.#body[0].y = y;
+        this.#body.pop();
+        this.#body.unshift({x: x, y: y});
     }
     setDir(d) {
         switch(d){
@@ -57,10 +64,16 @@ class Snake {
     display(){
         stroke(this.getColor());
         strokeWeight(this.getPixel());
-        for(let i=0; i<this.getBody().length; i++){
-            let _x = this.getBody()[i].x;
-            let _y = this.getBody()[i].y;
-            line(_x, _y, _x+1, _y+1);
+        var prev = this.getBody()[0];
+        for(let i=1; i<this.getBody().length; i++){
+            let curr = this.getBody()[i];
+            if ((curr.x != prev.x && curr.y != prev.y)){
+                line(prev.x, prev.y, this.getBody()[i-1].x, this.getBody()[i-1].y);
+                prev = this.getBody()[i - 1];
+            }
+            if (i == this.getBody().length-1){
+                line(prev.x, prev.y, curr.x, curr.y);
+            }
         }
     }
 

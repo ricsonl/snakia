@@ -38,10 +38,24 @@ class Game {
         this.#color = c;
     }
 
+    checkStatus(){
+        if (
+            this.getSnake().getBody()[0].x > this.getWidth() ||
+            this.getSnake().getBody()[0].x < 0 ||
+            this.getSnake().getBody()[0].y > this.getHeight() ||
+            this.getSnake().getBody()[0].y < 0 //||
+            //this.getSnake().checkCollision()
+        ) {
+            noLoop();
+            console.log('fodase');
+        }
+    }
+
     display(){
         fill(this.getColor());
         rect(0, 0, this.getWidth(), this.getHeight());
         this.getSnake().display();
         this.getSnake().updatePos();
+        this.checkStatus();
     }
 }
