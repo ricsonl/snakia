@@ -3,26 +3,22 @@ class Snake {
     #body = undefined;
     #dir = undefined;
 
+    #nn = undefined;
+
     #color = undefined;
 
     constructor(x, y, g){
-        if(arguments.length == 1){
-            this.#game = x.getGame();
-            this.#body = x.getBody();
-            this.#dir = x.getDir();
+        this.#game = g;
+        this.#body = [
+                        { x: x*g.getPixel(), y: y*g.getPixel() }, 
+                        { x: (x-1)*g.getPixel(), y: y*g.getPixel() }, 
+                        { x: (x-2)*g.getPixel(), y: y*g.getPixel() }
+                    ];
+        this.#dir = ['U', 'R', 'D', 'L'][Math.floor(Math.random()*4)];
 
-            this.#color = x.getColor();
-        } else {
-            this.#game = g;
-            this.#body = [
-                            { x: x*g.getPixel(), y: y*g.getPixel() }, 
-                            { x: (x-1)*g.getPixel(), y: y*g.getPixel() }, 
-                            { x: (x-2)*g.getPixel(), y: y*g.getPixel() }
-                        ];
-            this.#dir = 'R';
+        this.#nn = new NeuralNetwork(24, [18,18], 4);            
 
-            this.#color = color(255, 255, 255);
-        }
+        this.#color = color(255, 255, 255);
     }
 
     getGame() {
@@ -89,23 +85,6 @@ class Snake {
         this.#body.push(this.#body[this.#body.length - 1]);
     }
 
-    humanControl(key){
-        switch (key) {
-            case 38:
-                this.setDir('U');
-                break;
-            case 39:
-                this.setDir('R');
-                break;
-            case 40:
-                this.setDir('D');
-                break;
-            case 37:
-                this.setDir('L');
-                break;
-        }
-    }
-
     updatePos(){
         let _x = this.#body[0].x;
         let _y = this.#body[0].y;
@@ -143,6 +122,76 @@ class Snake {
                 this.setColor(color(255, 0, 0));
                 return true;
             }
+        }
+    }
+
+    humanControl(key) {
+        switch (key) {
+            case 38:
+                this.setDir('U');
+                break;
+            case 39:
+                this.setDir('R');
+                break;
+            case 40:
+                this.setDir('D');
+                break;
+            case 37:
+                this.setDir('L');
+                break;
+        }
+    }
+
+    think(){
+        /*let inputs = [  1.0, 0.5, 0.2, 0.3,
+                        1.0, 0.5, 0.2, 0.3,
+                        1.0, 0.5, 0.2, 0.3,
+                        1.0, 0.5, 0.2, 0.3,
+                        1.0, 0.5, 0.2, 0.3,
+                        1.0, 0.5, 0.2, 0.3
+                    ]*/
+
+        let inputs = [];
+
+        inputs[0] = ;
+        inputs[1] = ;
+        inputs[2] = ;
+        inputs[3] = ;
+        inputs[4] = ;
+        inputs[5] = ;
+        inputs[6] = ;
+        inputs[7] = ;
+        inputs[8] = ;
+        inputs[9] = ;
+        inputs[10] = ;
+        inputs[11] = ;
+        inputs[12] = ;
+        inputs[13] = ;
+        inputs[14] = ;
+        inputs[15] = ;
+        inputs[16] = ;
+        inputs[17] = ;
+        inputs[18] = ;
+        inputs[19] = ;
+        inputs[20] = ;
+        inputs[21] = ;
+        inputs[22] = ;
+        inputs[23] = ;
+
+        let output = this.#nn.predict(inputs);
+        switch (output.indexOf(Math.max(...output))){
+            case 0:
+                this.setDir('U');
+                break;
+            case 1:
+                this.setDir('R');
+                break;
+            case 2:
+                this.setDir('D');
+                break;
+            case 3:
+                this.setDir('L');
+                break;
         }
     }
 }

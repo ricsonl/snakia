@@ -4,18 +4,11 @@ class Fruit {
 
     #color = undefined;
 
-    constructor(x, y, g) {
-        if(arguments.length == 1){
-            this.#game = x.getGame();
-            this.#pos = x.getPos();
+    constructor(x, y, g) {   
+        this.#game = g;
+        this.#pos = { x: x*g.getPixel(), y: y*g.getPixel() };
 
-            this.#color = x.getColor();
-        } else {   
-            this.#game = g;
-            this.#pos = { x: x*g.getPixel(), y: y*g.getPixel() };
-
-            this.#color = color(240, 10, 30);
-        }
+        this.#color = color(255, 190, 20);
     }
 
     getGame() {

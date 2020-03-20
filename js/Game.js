@@ -73,4 +73,8 @@ class Game {
     humanControlSnake(key){
         this.#snakes[0].humanControl(key);
     }
+
+    aiControlSnake(key) {
+        this.#snakes[0].think();
+    }
 }
