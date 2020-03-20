@@ -2,7 +2,7 @@
 function setup(){
     game = new Game(65, 65, 15);
     createCanvas(game.getWidth(), game.getHeight());
-    frameRate(5);
+    frameRate(24);
 }
 
 function draw(){
@@ -33,4 +33,5 @@ function keyPressed() {
             }
             break;
     }
+    return false;
 }

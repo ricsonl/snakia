@@ -6,6 +6,7 @@ class Game {
     #color = undefined;
 
     #snake = undefined;
+    #fruit = undefined;
 
     constructor(h, w, p){
         this.#pixel = p;
@@ -15,7 +16,8 @@ class Game {
 
         this.#color = color(0, 0, 0);
 
-        this.#snake = new Snake( Math.floor(w / 2), Math.floor(h / 2), p );
+        this.#snake = new Snake(Math.floor(w / 2), Math.floor(h / 2), p);
+        this.#fruit = new Fruit(Math.floor(Math.random() * (w-2) +2), Math.floor(Math.random() * (h-2) +2), p);
     }
     
     getPixel(){
@@ -33,6 +35,9 @@ class Game {
     getSnake(){
         return this.#snake;
     }
+    getFruit(){
+        return this.#fruit;
+    }
 
     setColor(c){
         this.#color = c;
@@ -43,8 +48,8 @@ class Game {
             this.getSnake().getBody()[0].x > this.getWidth() ||
             this.getSnake().getBody()[0].x < 0 ||
             this.getSnake().getBody()[0].y > this.getHeight() ||
-            this.getSnake().getBody()[0].y < 0 //||
-            //this.getSnake().checkCollision()
+            this.getSnake().getBody()[0].y < 0 ||
+            this.getSnake().checkCollision()
         ) {
             noLoop();
             console.log('fodase');
@@ -53,9 +58,13 @@ class Game {
 
     display(){
         fill(this.getColor());
-        rect(0, 0, this.getWidth(), this.getHeight());
+        rect(0, 0, this.getWidth(), this.getHeight());   
+
+        this.getFruit().display();
+
         this.getSnake().display();
         this.getSnake().updatePos();
+
         this.checkStatus();
     }
 }

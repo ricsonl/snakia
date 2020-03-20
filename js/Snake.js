@@ -13,7 +13,9 @@ class Snake {
                         { x: (x-2)*p, y: y*p },
                         { x: (x-3)*p, y: y*p },
                         { x: (x-4)*p, y: y*p },
-                        { x: (x-5)*p, y: y*p }
+                        { x: (x-5)*p, y: y*p },
+                        { x: (x-6)*p, y: y*p },
+                        { x: (x-7)*p, y: y*p }
                     ];
         this.#dir = 'R';
 
@@ -94,6 +96,18 @@ class Snake {
             case 'L':
                 this.setBody(_x-this.getPixel(), _y);
                 break; 
+        }
+    }
+
+    checkCollision(){
+        let _x = this.getBody()[0].x;
+        let _y = this.getBody()[0].y;
+
+        for (let i = 1; i<this.getBody().length-1; i++) {
+            let b = this.getBody()[i];
+            if (b.x == _x && b.y == _y) {
+                return true;
+            }
         }
     }
 }
