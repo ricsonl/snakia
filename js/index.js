@@ -1,6 +1,6 @@
 
 function setup(){
-    game = new Game(65, 65, 15);
+    game = new Game(65, 65, 15, 2);
 }
 
 function draw(){
@@ -8,5 +8,5 @@ function draw(){
 }
 
 function keyPressed() {
-    game.controlSnake(keyCode);
+    game.humanControlSnake(keyCode);
 }

@@ -1,23 +1,23 @@
 class Snake {
-    #pixel = undefined;
+    #game = undefined;
     #body = undefined;
     #dir = undefined;
 
     #color = undefined;
 
-    constructor(x, y, p){
+    constructor(x, y, g){
         if(arguments.length == 1){
-            this.#pixel = x.getPixel();
+            this.#game = x.getGame();
             this.#body = x.getBody();
             this.#dir = x.getDir();
 
             this.#color = x.getColor();
         } else {
-            this.#pixel = p;
+            this.#game = g;
             this.#body = [
-                            { x: x*p, y: y*p }, 
-                            { x: (x-1)*p, y: y*p }, 
-                            { x: (x-2)*p, y: y*p }
+                            { x: x*g.getPixel(), y: y*g.getPixel() }, 
+                            { x: (x-1)*g.getPixel(), y: y*g.getPixel() }, 
+                            { x: (x-2)*g.getPixel(), y: y*g.getPixel() }
                         ];
             this.#dir = 'R';
 
@@ -25,8 +25,8 @@ class Snake {
         }
     }
 
-    getPixel() {
-        return this.#pixel.valueOf();
+    getGame() {
+        return this.#game;
     }
     getBody() { 
         return this.#body.slice();
@@ -64,7 +64,7 @@ class Snake {
     
     display(){
         stroke(this.getColor());
-        strokeWeight(this.getPixel());
+        strokeWeight(this.#game.getPixel());
         let body = this.getBody();
 
         let prev = body[0];
@@ -89,7 +89,7 @@ class Snake {
         this.#body.push(this.#body[this.#body.length - 1]);
     }
 
-    control(key){
+    humanControl(key){
         switch (key) {
             case 38:
                 this.setDir('U');
@@ -112,17 +112,37 @@ class Snake {
         
         switch(this.#dir){
             case 'U':
-                this.walk(_x, _y-this.#pixel);
+                this.walk(_x, _y-this.#game.getPixel());
                 break;
             case 'R':
-                this.walk(_x+this.#pixel, _y);
+                this.walk(_x+this.#game.getPixel(), _y);
                 break;
             case 'D':
-                this.walk(_x, _y+this.#pixel);
+                this.walk(_x, _y+this.#game.getPixel());
                 break;
             case 'L':
-                this.walk(_x-this.#pixel, _y);
+                this.walk(_x-this.#game.getPixel(), _y);
                 break; 
+        }
+    }
+
+    checkCollision() {
+        let body = this.getBody();
+
+        let _x = body[0].x;
+        let _y = body[0].y;
+
+        for (let i = 1; i < body.length - 1; i++) {
+            let segm = body[i];
+            if (segm.x == _x && segm.y == _y ||
+                this.getBody()[0].x > (this.#game.getWidth() * this.#game.getPixel()) ||
+                this.getBody()[0].x < 0 ||
+                this.getBody()[0].y > (this.#game.getHeight() * this.#game.getPixel()) ||
+                this.getBody()[0].y < 0
+                ) {
+                this.setColor(color(255, 0, 0));
+                return true;
+            }
         }
     }
 }

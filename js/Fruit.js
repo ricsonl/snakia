@@ -1,25 +1,25 @@
 class Fruit {
-    #pixel = undefined;
+    #game = undefined;
     #pos = undefined;
 
     #color = undefined;
 
-    constructor(x, y, p) {
+    constructor(x, y, g) {
         if(arguments.length == 1){
-            this.#pixel = x.getPixel();
+            this.#game = x.getGame();
             this.#pos = x.getPos();
 
             this.#color = x.getColor();
         } else {   
-            this.#pixel = p;
-            this.#pos = { x: x*p, y: y*p };
+            this.#game = g;
+            this.#pos = { x: x*g.getPixel(), y: y*g.getPixel() };
 
             this.#color = color(240, 10, 30);
         }
     }
 
-    getPixel() {
-        return this.#pixel.valueOf();
+    getGame() {
+        return this.#game;
     }
     getPos() {
         return JSON.parse(JSON.stringify(this.#pos));
@@ -29,7 +29,7 @@ class Fruit {
     }
 
     setPos(x, y) {
-        this.#pos = { x: x*this.#pixel, y: y*this.#pixel };
+        this.#pos = { x: x*this.#game.getPixel(), y: y*this.#game.getPixel() };
     }
     setColor(c) {
         this.#color = c;
@@ -38,7 +38,7 @@ class Fruit {
     display() {
         let coord = this.getPos();
         stroke(this.getColor());
-        strokeWeight(this.getPixel()); 
+        strokeWeight(this.#game.getPixel()); 
         line(coord.x, coord.y, coord.x, coord.y);
     }
 }
