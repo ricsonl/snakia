@@ -1,6 +1,6 @@
 
 function setup(){
-    game = new Game(550, 550, 127);
+    game = new Game(25, 25, 15);
     createCanvas(game.getHeight(), game.getWidth());
     frameRate(15);
 }

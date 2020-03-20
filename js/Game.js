@@ -1,23 +1,22 @@
 class Game {
     #height = undefined;
     #width = undefined;
+    #pixel = undefined;
 
     #color = undefined;
 
     #snake = undefined;
 
-    constructor(h, w, color) {
-        this.#height = h;
-        this.#width = w;
+    constructor(h, w, p){
+        this.#pixel = p;
 
-        this.#color = color;
+        this.#height = h*p;
+        this.#width = w*p;
 
-        this.#snake = new Snake();
+        this.#color = color(10, 100, 150);
 
-        this.#snake.setX(w/2);
-        this.#snake.setY(h/2);
+        this.#snake = new Snake( Math.floor(w / 2), Math.floor(h / 2), p );
     }
-
     
     getHeight(){
         return this.#height;
@@ -28,13 +27,10 @@ class Game {
     getColor(){
         return this.#color;
     }
-
-    setHeight(h){
-        this.#height = h;
+    getPixel(){
+        return this.#pixel;
     }
-    setWidth(w){
-        this.#width = h;
-    } 
+
     setColor(c){
         this.#color = c;
     }
