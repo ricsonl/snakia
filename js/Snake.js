@@ -3,6 +3,8 @@ class Snake {
     #fruit = undefined;
     #body = undefined;
     #dir = undefined;
+    #points = undefined;
+    #targets = undefined;
 
     #nn = undefined;
 
@@ -16,97 +18,120 @@ class Snake {
                         { x: (x-1)*g.getPixel(), y: y*g.getPixel() }, 
                         { x: (x-2)*g.getPixel(), y: y*g.getPixel() }
                     ];
+        this.#points = {
+            'ahead': undefined,
+            'right': undefined,
+            'left': undefined
+        }
+        this.#targets = {
+            'food': undefined,
+            'tail': undefined,
+            'aWall': undefined,
+            'rWall': undefined,
+            'lWall': undefined,
+        }
         this.#dir = ['U', 'R', 'D', 'L'][Math.floor(Math.random()*4)];
+        this.setDT();
 
-        this.#nn = new NeuralNetwork(24, [18,18], 4);
+        this.#nn = new NeuralNetwork(9, [6,6], 3);
 
         this.#color = color(255, 255, 255);
     }
 
-    getGame() {
+    getGame(){
         return this.#game;
     }
-    getFruit() {
+    getFruit(){
         return this.#fruit;
     }
-    getBody() { 
+    getBody(){ 
         return this.#body.slice();
     }
-    getDir() {
+    getDir(){
         return this.#dir.valueOf();
     }
-    getColor() {
+    getColor(){
         return color(this.#color);
     }
 
-    setFruit(f) {
-        this.#fruit = f;
-    }
-    setDir(d) {
-        switch(d){
+    setDT(){
+        let head = this.#body[0];
+        let pixel = this.#game.getPixel();
+        let width = this.#game.getWidth();
+        let height = this.#game.getHeight();
+
+        this.#targets['tail'] = this.#body[this.#body.length - 1];
+        this.#targets['food'] = this.#fruit.getPos();
+
+        switch(this.#dir){
             case 'U':
-                if(this.#dir != 'D')
-                    this.#dir = d;
+                this.#points['ahead'] = { x: head.x, y: head.y - pixel };
+                this.#points['right'] = { x: head.x + pixel, y: head.y };
+                this.#points['left'] = { x: head.x - pixel, y: head.y };
+
+                this.#targets['aWall'] = { x: head.x, y: 0 };
+                this.#targets['rWall'] = { x: width * pixel, y: head.y };
+                this.#targets['lWall'] = { x: 0, y: head.y };
+                
                 break;
+
             case 'R':
-                if(this.#dir != 'L')
-                    this.#dir = d;
+                this.#points['ahead'] = { x: head.x + pixel, y: head.y };
+                this.#points['right'] = { x: head.x, y: head.y + pixel };
+                this.#points['left'] = { x: head.x, y: head.y - pixel };
+
+                this.#targets['aWall'] = { x: width * pixel, y: head.y };
+                this.#targets['rWall'] = { x: head.x, y: height * pixel };
+                this.#targets['lWall'] = { x: head.x, y: 0 };
+                
                 break;
+
             case 'D':
-                if(this.#dir != 'U')
-                    this.#dir = d;
+                this.#points['ahead'] = { x: head.x, y: head.y + pixel };
+                this.#points['right'] = { x: head.x - pixel, y: head.y };
+                this.#points['left'] = { x: head.x + pixel, y: head.y };
+
+                this.#targets['aWall'] = { x: head.x, y: height * pixel };
+                this.#targets['rWall'] = { x: 0, y: head.y };
+                this.#targets['lWall'] = { x: width * pixel, y: head.y };
+                
                 break;
+
             case 'L':
-                if(this.#dir != 'R')
-                    this.#dir = d;
+                this.#points['ahead'] = { x: head.x - pixel, y: head.y };
+                this.#points['right'] = { x: head.x, y: head.y - pixel };
+                this.#points['left'] = { x: head.x, y: head.y + pixel };
+
+                this.#targets['aWall'] = { x: 0, y: head.y };
+                this.#targets['rWall'] = { x: head.x, y: 0 };
+                this.#targets['lWall'] = { x: head.x, y: height * pixel };
+                
                 break;
+
         }
     }
+
+    setFruit(f){
+        this.#fruit = f;
+    }
+
     setColor(c){
         this.#color = c;
     }
 
     drawDist(){
-        let pixel = this.#game.getPixel();
-        let width = this.#game.getWidth()*pixel;
-        let height = this.#game.getHeight()*pixel;
-
-        let head = this.#body[0];
-        let tail = this.#body[this.#body.length -1];
-        let food = this.#fruit.getPos();
-
         strokeWeight(0.5);
 
-        stroke(color(255, 190, 20));
-        //N->food
-        line(head.x, head.y - pixel, food.x, food.y);
-        //E->food
-        line(head.x + pixel, head.y, food.x, food.y);
-        //S->food
-        line(head.x, head.y + pixel, food.x, food.y);
-        //W->food
-        line(head.x - pixel, head.y, food.x, food.y);
-
-        stroke(color(0, 255, 0));
-        //N->tail
-        line(head.x, head.y-pixel, tail.x, tail.y);
-        //E->tail
-        line(head.x + pixel, head.y, tail.x, tail.y);
-        //S->tail
-        line(head.x, head.y + pixel, tail.x, tail.y);
-        //W->tail
-        line(head.x - pixel, head.y, tail.x, tail.y);
-
-        stroke(color(50, 120, 255));
-        //N->wall
-        line(head.x, head.y-pixel, head.x, 0);
-        //E->wall
-        line(head.x + pixel, head.y, width, head.y);
-        //S->wall
-        line(head.x, head.y + pixel, head.x, height);
-        //W->wall
-        line(head.x - pixel, head.y, 0, head.y);
+        Object.entries(this.#targets).map((t) =>{
+            if (t[0] == 'food') stroke(color(255, 190, 20));
+            else if (t[0] == 'tail') stroke(color(0, 255, 0));
+            else stroke(color(50, 120, 255));
+            Object.values(this.#points).map((d) => {
+                line(t[1].x, t[1].y, d.x, d.y);
+            });
+        })
     }
+
     display(){
         stroke(this.getColor());
         strokeWeight(this.#game.getPixel());
@@ -152,6 +177,8 @@ class Snake {
                 this.walk(_x-this.#game.getPixel(), _y);
                 break; 
         }
+
+        this.setDT();
     }
 
     checkCollision() {
@@ -177,45 +204,54 @@ class Snake {
     humanControl(key) {
         switch (key) {
             case 38:
-                this.setDir('U');
+                if (this.#dir != 'D')
+                    this.#dir = 'U';
                 break;
             case 39:
-                this.setDir('R');
+                if (this.#dir != 'L')
+                    this.#dir = 'R';
                 break;
             case 40:
-                this.setDir('D');
+                if (this.#dir != 'U')
+                    this.#dir = 'D';
                 break;
             case 37:
-                this.setDir('L');
+                if (this.#dir != 'R')
+                    this.#dir = 'L';
                 break;
         }
     }
 
     think(){
-        /*let inputs = [  1.0, 0.5, 0.2, 0.3,
-                        1.0, 0.5, 0.2, 0.3,
-                        1.0, 0.5, 0.2, 0.3,
-                        1.0, 0.5, 0.2, 0.3,
-                        1.0, 0.5, 0.2, 0.3,
-                        1.0, 0.5, 0.2, 0.3
-                    ]*/
+        /*let inputs = [];
 
-        let inputs = [];
+        Object.entries(this.#targets).map((t) => {
+            if (t[0] == 'food') stroke(color(255, 190, 20));
+            else if (t[0] == 'tail') stroke(color(0, 255, 0));
+            else stroke(color(50, 120, 255));
+            Object.values(this.#points).map((d) => {
+                line(t[1].x, t[1].y, d.x, d.y);
+            });
+        })*/
 
-        let output = this.#nn.predict(inputs);
+        let pixel = this.#game.getPixel();
+        let width = this.#game.getWidth() * pixel;
+        let height = this.#game.getHeight() * pixel;
+
+        let head = this.#body[0];
+        let tail = this.#body[this.#body.length - 1];
+        let food = this.#fruit.getPos();
+
+        /*let output = this.#nn.predict(inputs);
         switch (output.indexOf(Math.max(...output))){
             case 0:
-                this.setDir('U');
                 break;
             case 1:
-                this.setDir('R');
+                this.turnRight();
                 break;
             case 2:
-                this.setDir('D');
+                this.turnLeft();
                 break;
-            case 3:
-                this.setDir('L');
-                break;
-        }
+        }*/
     }
 }
