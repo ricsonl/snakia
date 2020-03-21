@@ -63,7 +63,6 @@ class Snake {
         this.#targets['tail'] = this.#body[this.#body.length - 1];
         this.#targets['food'] = this.#fruit.getPos();
 
-        console.log(dir);
         switch(dir){
             case 'U':
                 this.#points['ahead'] = { x: head.x, y: head.y - pixel };
@@ -151,35 +150,35 @@ class Snake {
         }
     }
 
-    walk(x, y) {
+    walk() {  
         this.#body.pop();
-        this.#body.unshift({ x: x, y: y });
+        this.#body.unshift(this.#points['ahead']);
+        this.setPT(this.#dir);
+    }
+    turn(dir) {
+        switch(this.#dir){
+            case 'U':
+                if(dir == 'right') this.#dir = 'L';
+                else this.#dir = 'R';
+                break;
+            case 'R':
+                if (dir == 'right') this.#dir = 'D';
+                else this.#dir = 'U'; 
+                break;
+            case 'D':
+                if(dir == 'right') this.#dir = 'R';
+                else this.#dir = 'L';
+                break;
+            case 'L':
+                if(dir == 'right') this.#dir = 'U';
+                else this.#dir = 'D';
+                break;
+        }
+        this.setPT(this.#dir);
     }
 
     grow() {
         this.#body.push(this.#body[this.#body.length - 1]);
-    }
-
-    updatePos(){
-        let _x = this.#body[0].x;
-        let _y = this.#body[0].y;
-        
-        switch(this.#dir){
-            case 'U':
-                this.walk(_x, _y-this.#game.getPixel());
-                break;
-            case 'R':
-                this.walk(_x+this.#game.getPixel(), _y);
-                break;
-            case 'D':
-                this.walk(_x, _y+this.#game.getPixel());
-                break;
-            case 'L':
-                this.walk(_x-this.#game.getPixel(), _y);
-                break; 
-        }
-
-        this.setPT();
     }
 
     checkCollision() {
@@ -191,10 +190,10 @@ class Snake {
         for (let i = 1; i < body.length - 1; i++) {
             let segm = body[i];
             if (segm.x == _x && segm.y == _y ||
-                this.getBody()[0].x > (this.#game.getWidth() * this.#game.getPixel()) ||
-                this.getBody()[0].x < 0 ||
-                this.getBody()[0].y > (this.#game.getHeight() * this.#game.getPixel()) ||
-                this.getBody()[0].y < 0
+                this.getBody()[0].x >= (this.#game.getWidth() * this.#game.getPixel()) ||
+                this.getBody()[0].x <= 0 ||
+                this.getBody()[0].y >= (this.#game.getHeight() * this.#game.getPixel()) ||
+                this.getBody()[0].y <= 0
                 ) {
                 this.setColor(color(255, 0, 0));
                 return true;
@@ -221,6 +220,7 @@ class Snake {
                     this.#dir = 'L';
                 break;
         }
+        this.setPT(this.#dir);
     }
 
     think(){
@@ -231,23 +231,23 @@ class Snake {
             Object.entries(this.#points).map((d) => {
                 let c1 = (t[1].x - d[1].x) / pixel;
                 let c2 = (t[1].y - d[1].y) / pixel;
-                inputs.push([t[0],d[0],Math.sqrt( c1*c1 + c2*c2 )]);
+                inputs.push(Math.sqrt( c1*c1 + c2*c2 ));
             });
         });
 
-        console.log(inputs);
-        /*
+        //console.log(inputs);
+        
         let output = this.#nn.predict(inputs);
         console.log(output);
         switch (output.indexOf(Math.max(...output))){
             case 0:
                 break;
             case 1:
-                this.turnRight();
+                this.turn('right');
                 break;
             case 2:
-                this.turnLeft();
+                this.turn('left');
                 break;
-        }*/
+        }
     }
 }
