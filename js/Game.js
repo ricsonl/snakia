@@ -24,7 +24,7 @@ class Game {
         }
 
         createCanvas(this.getWidth()*this.getPixel(), this.getHeight()*this.getPixel());
-        frameRate(5);
+        frameRate(10);
     }
     
     getPixel(){
@@ -39,12 +39,6 @@ class Game {
     getColor(){
         return color(this.#color);
     }
-    /*getSnakes(){
-        return ;
-    }*/
-    /*getFruits(){
-        return;
-    }*/
 
     setColor(c){
         this.#color = c;
@@ -58,14 +52,13 @@ class Game {
    
         for(let i=0; i<this.#snakes.length; i++){
             if(!this.#snakes[i].checkCollision()){
-                this.#snakes[i].think();
-                this.#snakes[i].walk();
                 if (JSON.stringify(this.#snakes[i].getBody()[0]) === JSON.stringify(this.#fruits[i].getPos())) {
                     this.#snakes[i].grow();
                     this.#fruits[i].setPos(Math.floor(Math.random() * (this.getWidth() - 2) + 2), Math.floor(Math.random() * (this.getHeight() - 2) + 2));
                 }
-                this.#fruits[i].display();
+                this.#snakes[i].think();
                 this.#snakes[i].drawDist();
+                this.#fruits[i].display();
             }
             this.#snakes[i].display();
         }

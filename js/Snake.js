@@ -121,7 +121,6 @@ class Snake {
 
     drawDist(){
         strokeWeight(0.5);
-
         Object.entries(this.#targets).map((t) =>{
             if (t[0] == 'food') stroke(color(255, 190, 20));
             else if (t[0] == 'tail') stroke(color(0, 255, 0));
@@ -150,31 +149,33 @@ class Snake {
         }
     }
 
-    walk() {  
-        this.#body.pop();
-        this.#body.unshift(this.#points['ahead']);
-        this.setPT(this.#dir);
-    }
-    turn(dir) {
+    walk(dir) {
         switch(this.#dir){
             case 'U':
-                if(dir == 'right') this.#dir = 'L';
-                else this.#dir = 'R';
+                this.#body.pop();
+                this.#body.unshift(this.#points[dir]);
+                this.#dir = (dir == 'right') ? 'R' : ((dir == 'left') ? 'L' : 'U');
+                this.setPT(this.#dir);
                 break;
             case 'R':
-                if (dir == 'right') this.#dir = 'D';
-                else this.#dir = 'U'; 
+                this.#body.pop();
+                this.#body.unshift(this.#points[dir]);
+                this.#dir = (dir == 'right') ? 'D' : ((dir == 'left') ? 'U' : 'R');
+                this.setPT(this.#dir);
                 break;
             case 'D':
-                if(dir == 'right') this.#dir = 'R';
-                else this.#dir = 'L';
+                this.#body.pop();
+                this.#body.unshift(this.#points[dir]);
+                this.#dir = (dir == 'right') ? 'L' : ((dir == 'left') ? 'R' : 'D');
+                this.setPT(this.#dir);
                 break;
             case 'L':
-                if(dir == 'right') this.#dir = 'U';
-                else this.#dir = 'D';
+                this.#body.pop();
+                this.#body.unshift(this.#points[dir]);
+                this.#dir = (dir == 'right') ? 'U' : ((dir == 'left') ? 'D' : 'L');
+                this.setPT(this.#dir);
                 break;
         }
-        this.setPT(this.#dir);
     }
 
     grow() {
@@ -220,7 +221,6 @@ class Snake {
                     this.#dir = 'L';
                 break;
         }
-        this.setPT(this.#dir);
     }
 
     think(){
@@ -235,18 +235,18 @@ class Snake {
             });
         });
 
-        //console.log(inputs);
-        
         let output = this.#nn.predict(inputs);
         console.log(output);
+        console.log(output.indexOf(Math.max(...output)));
         switch (output.indexOf(Math.max(...output))){
             case 0:
+                this.walk('left');
                 break;
             case 1:
-                this.turn('right');
+                this.walk('ahead');
                 break;
             case 2:
-                this.turn('left');
+                this.walk('right');
                 break;
         }
     }

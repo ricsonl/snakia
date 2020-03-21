@@ -7,6 +7,6 @@ function draw(){
     game.display();
 }
 
-function keyPressed() {
+/*function keyPressed() {
     game.humanControlSnake(keyCode);
-}
+}*/
