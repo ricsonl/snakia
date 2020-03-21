@@ -20,7 +20,7 @@ class Game {
         this.#fruits = [];
         for(let i=0; i<s; i++){
             this.#fruits[i]= new Fruit(Math.floor(Math.random() * (w-2) +2), Math.floor(Math.random() * (h-2) +2), this);
-            this.#snakes[i] = new Snake(Math.floor(w / 2), Math.floor(h / 2), this, this.#fruits[i]);
+            this.#snakes[i] = new Snake(Math.floor(w / 2), Math.floor(h*(7/8)), this, this.#fruits[i]);
         }
 
         createCanvas(this.getWidth()*this.getPixel(), this.getHeight()*this.getPixel());
@@ -60,7 +60,7 @@ class Game {
             this.#snakes[i].display();
             if(!this.#snakes[i].checkCollision()){
                 this.#snakes[i].drawDist();
-                this.#snakes[i].updatePos();
+                //this.#snakes[i].updatePos();
                 this.#fruits[i].display();
                 let body = this.#snakes[i].getBody();
                 if (JSON.stringify(body[0]) === JSON.stringify(this.#fruits[i].getPos())) {

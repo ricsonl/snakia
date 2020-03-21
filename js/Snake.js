@@ -15,8 +15,8 @@ class Snake {
         this.#fruit = f;
         this.#body = [
                         { x: x*g.getPixel(), y: y*g.getPixel() }, 
-                        { x: (x-1)*g.getPixel(), y: y*g.getPixel() }, 
-                        { x: (x-2)*g.getPixel(), y: y*g.getPixel() }
+                        { x: x*g.getPixel(), y: (y+1)*g.getPixel() }, 
+                        { x: x*g.getPixel(), y: (y+2)*g.getPixel() }
                     ];
         this.#points = {
             'ahead': undefined,
@@ -30,10 +30,10 @@ class Snake {
             'rWall': undefined,
             'lWall': undefined,
         }
-        this.#dir = ['U', 'R', 'D', 'L'][Math.floor(Math.random()*4)];
-        this.setDT();
+        this.#dir = 'U';
+        this.setPT(this.#dir);
 
-        this.#nn = new NeuralNetwork(9, [6,6], 3);
+        this.#nn = new NeuralNetwork(15, [9,9], 3);
 
         this.#color = color(255, 255, 255);
     }
@@ -54,7 +54,7 @@ class Snake {
         return color(this.#color);
     }
 
-    setDT(){
+    setPT(dir){
         let head = this.#body[0];
         let pixel = this.#game.getPixel();
         let width = this.#game.getWidth();
@@ -63,7 +63,8 @@ class Snake {
         this.#targets['tail'] = this.#body[this.#body.length - 1];
         this.#targets['food'] = this.#fruit.getPos();
 
-        switch(this.#dir){
+        console.log(dir);
+        switch(dir){
             case 'U':
                 this.#points['ahead'] = { x: head.x, y: head.y - pixel };
                 this.#points['right'] = { x: head.x + pixel, y: head.y };
@@ -178,7 +179,7 @@ class Snake {
                 break; 
         }
 
-        this.setDT();
+        this.setPT();
     }
 
     checkCollision() {
@@ -223,26 +224,21 @@ class Snake {
     }
 
     think(){
-        /*let inputs = [];
+        let inputs = [];
+        let pixel = this.#game.getPixel();
 
         Object.entries(this.#targets).map((t) => {
-            if (t[0] == 'food') stroke(color(255, 190, 20));
-            else if (t[0] == 'tail') stroke(color(0, 255, 0));
-            else stroke(color(50, 120, 255));
-            Object.values(this.#points).map((d) => {
-                line(t[1].x, t[1].y, d.x, d.y);
+            Object.entries(this.#points).map((d) => {
+                let c1 = (t[1].x - d[1].x) / pixel;
+                let c2 = (t[1].y - d[1].y) / pixel;
+                inputs.push([t[0],d[0],Math.sqrt( c1*c1 + c2*c2 )]);
             });
-        })*/
+        });
 
-        let pixel = this.#game.getPixel();
-        let width = this.#game.getWidth() * pixel;
-        let height = this.#game.getHeight() * pixel;
-
-        let head = this.#body[0];
-        let tail = this.#body[this.#body.length - 1];
-        let food = this.#fruit.getPos();
-
-        /*let output = this.#nn.predict(inputs);
+        console.log(inputs);
+        /*
+        let output = this.#nn.predict(inputs);
+        console.log(output);
         switch (output.indexOf(Math.max(...output))){
             case 0:
                 break;
