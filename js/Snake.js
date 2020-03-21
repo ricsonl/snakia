@@ -1,4 +1,5 @@
 class Snake {
+    #dead = undefined;
     #game = undefined;
     #fruit = undefined;
     #body = undefined;
@@ -11,6 +12,7 @@ class Snake {
     #color = undefined;
 
     constructor(x, y, g, f){
+        this.#dead = false;
         this.#game = g;
         this.#fruit = f;
         this.#body = [
@@ -38,6 +40,9 @@ class Snake {
         this.#color = color(255, 255, 255);
     }
 
+    isDead(){
+        return (this.#dead ? true:false);
+    }
     getGame(){
         return this.#game;
     }
@@ -183,23 +188,34 @@ class Snake {
     }
 
     checkCollision() {
-        const body = this.getBody();
+        const pixel = this.#game.getPixel();
+        const width = this.#game.getWidth();
+        const height = this.#game.getHeight();
 
-        const _x = body[0].x;
-        const _y = body[0].y;
+        if (
+            this.#body[0].y <= 0 ||
+            this.#body[0].x <= 0 ||
+            this.#body[0].x >= width * pixel ||
+            this.#body[0].y >= height * pixel
+            ){
+                this.#color = color(255, 0, 0);
+                this.#fruit.setColor(color(255, 0, 0));
+                this.#dead = true;
+            }
+            
+        const _x = this.#body[0].x;
+        const _y = this.#body[0].y;
 
-        for (let i = 1; i < body.length - 1; i++) {
-            let segm = body[i];
-            if (segm.x == _x && segm.y == _y ||
-                this.getBody()[0].x >= (this.#game.getWidth() * this.#game.getPixel()) ||
-                this.getBody()[0].x <= 0 ||
-                this.getBody()[0].y >= (this.#game.getHeight() * this.#game.getPixel()) ||
-                this.getBody()[0].y <= 0
-                ) {
-                this.setColor(color(255, 0, 0));
-                return true;
+        for (let i = 1; i < this.#body.length - 1; i++) {
+            let segm = this.#body[i];
+            if (segm.x == _x && segm.y == _y){
+                this.#color = color(255, 0, 0);
+                this.#fruit.setColor(color(255, 0, 0));
+                this.#dead = true;
             }
         }
+
+        return this.#dead;
     }
 
     humanControl(key) {
@@ -236,8 +252,6 @@ class Snake {
         });
 
         let output = this.#nn.predict(inputs);
-        console.log(output);
-        console.log(output.indexOf(Math.max(...output)));
         switch (output.indexOf(Math.max(...output))){
             case 0:
                 this.walk('left');
