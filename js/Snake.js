@@ -55,10 +55,10 @@ class Snake {
     }
 
     setPT(dir){
-        let head = this.#body[0];
-        let pixel = this.#game.getPixel();
-        let width = this.#game.getWidth();
-        let height = this.#game.getHeight();
+        const head = this.#body[0];
+        const pixel = this.#game.getPixel();
+        const width = this.#game.getWidth();
+        const height = this.#game.getHeight();
 
         this.#targets['tail'] = this.#body[this.#body.length - 1];
         this.#targets['food'] = this.#fruit.getPos();
@@ -134,11 +134,11 @@ class Snake {
     display(){
         stroke(this.getColor());
         strokeWeight(this.#game.getPixel());
-        let body = this.getBody();
+        const body = this.getBody();
 
         let prev = body[0];
         for(let i=1; i<body.length; i++){
-            let curr = body[i];
+            const curr = body[i];
             if ((curr.x != prev.x && curr.y != prev.y)){
                 line(prev.x, prev.y, body[i-1].x, body[i-1].y);
                 prev = body[i - 1];
@@ -183,10 +183,10 @@ class Snake {
     }
 
     checkCollision() {
-        let body = this.getBody();
+        const body = this.getBody();
 
-        let _x = body[0].x;
-        let _y = body[0].y;
+        const _x = body[0].x;
+        const _y = body[0].y;
 
         for (let i = 1; i < body.length - 1; i++) {
             let segm = body[i];

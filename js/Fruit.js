@@ -29,7 +29,7 @@ class Fruit {
     }
 
     display() {
-        let coord = this.getPos();
+        const coord = this.getPos();
         stroke(this.getColor());
         strokeWeight(this.#game.getPixel()); 
         line(coord.x, coord.y, coord.x, coord.y);
