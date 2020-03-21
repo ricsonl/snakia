@@ -1,7 +1,9 @@
 class Snake {
     #dead = undefined;
+
     #game = undefined;
     #fruit = undefined;
+
     #body = undefined;
     #dir = undefined;
     #points = undefined;
@@ -10,6 +12,8 @@ class Snake {
     #nn = undefined;
 
     #color = undefined;
+
+    #last = undefined;
 
     constructor(x, y, g, f){
         this.#dead = false;
@@ -38,6 +42,8 @@ class Snake {
         this.#nn = new NeuralNetwork(15, [9,9], 3);
 
         this.#color = color(255, 255, 255);
+
+        this.#last = [];
     }
 
     isDead(){
@@ -181,6 +187,17 @@ class Snake {
                 this.setPT(this.#dir);
                 break;
         }
+
+        this.#last.unshift(dir);
+        if(this.#last.length == this.#game.getWidth()){
+            this.#last.pop();
+            if(this.#last.every((val, i, arr) => val === arr[0])){
+                this.#color = color(255, 0, 0);
+                this.#fruit.setColor(color(255, 0, 0));
+                this.#dead = true;
+            }
+        }
+        
     }
 
     grow() {
