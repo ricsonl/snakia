@@ -1,5 +1,6 @@
 class Snake {
     #game = undefined;
+    #fruit = undefined;
     #body = undefined;
     #dir = undefined;
 
@@ -7,8 +8,9 @@ class Snake {
 
     #color = undefined;
 
-    constructor(x, y, g){
+    constructor(x, y, g, f){
         this.#game = g;
+        this.#fruit = f;
         this.#body = [
                         { x: x*g.getPixel(), y: y*g.getPixel() }, 
                         { x: (x-1)*g.getPixel(), y: y*g.getPixel() }, 
@@ -16,13 +18,16 @@ class Snake {
                     ];
         this.#dir = ['U', 'R', 'D', 'L'][Math.floor(Math.random()*4)];
 
-        this.#nn = new NeuralNetwork(24, [18,18], 4);            
+        this.#nn = new NeuralNetwork(24, [18,18], 4);
 
         this.#color = color(255, 255, 255);
     }
 
     getGame() {
         return this.#game;
+    }
+    getFruit() {
+        return this.#fruit;
     }
     getBody() { 
         return this.#body.slice();
@@ -34,6 +39,9 @@ class Snake {
         return color(this.#color);
     }
 
+    setFruit(f) {
+        this.#fruit = f;
+    }
     setDir(d) {
         switch(d){
             case 'U':
@@ -54,10 +62,48 @@ class Snake {
                 break;
         }
     }
-    setColor(c) {
+    setColor(c){
         this.#color = c;
     }
-    
+
+    drawDist(){
+        let pixel = this.#game.getPixel();
+        let width = this.#game.getWidth()*pixel;
+        let height = this.#game.getHeight()*pixel;
+
+        let head = this.#body[0];
+        let tail = this.#body[this.#body.length -1];
+        let food = this.#fruit.getPos();
+
+        stroke(color(255, 190, 20));
+        strokeWeight(0.5);
+        //N->food
+        line(head.x, head.y - pixel, food.x, food.y);
+        //E->food
+        line(head.x + pixel, head.y, food.x, food.y);
+        //S->food
+        line(head.x, head.y + pixel, food.x, food.y);
+        //W->food
+        line(head.x - pixel, head.y, food.x, food.y);
+
+        //N->tail
+        line(head.x, head.y-pixel, tail.x, tail.y);
+        //E->tail
+        line(head.x + pixel, head.y, tail.x, tail.y);
+        //S->tail
+        line(head.x, head.y + pixel, tail.x, tail.y);
+        //W->tail
+        line(head.x - pixel, head.y, tail.x, tail.y);
+
+        //N->wall
+        line(head.x, head.y-pixel, head.x, 0);
+        //E->wall
+        line(head.x + pixel, head.y, width, head.y);
+        //S->wall
+        line(head.x, head.y + pixel, head.x, height);
+        //W->wall
+        line(head.x - pixel, head.y, 0, head.y);
+    }
     display(){
         stroke(this.getColor());
         strokeWeight(this.#game.getPixel());
@@ -152,31 +198,6 @@ class Snake {
                     ]*/
 
         let inputs = [];
-
-        inputs[0] = ;
-        inputs[1] = ;
-        inputs[2] = ;
-        inputs[3] = ;
-        inputs[4] = ;
-        inputs[5] = ;
-        inputs[6] = ;
-        inputs[7] = ;
-        inputs[8] = ;
-        inputs[9] = ;
-        inputs[10] = ;
-        inputs[11] = ;
-        inputs[12] = ;
-        inputs[13] = ;
-        inputs[14] = ;
-        inputs[15] = ;
-        inputs[16] = ;
-        inputs[17] = ;
-        inputs[18] = ;
-        inputs[19] = ;
-        inputs[20] = ;
-        inputs[21] = ;
-        inputs[22] = ;
-        inputs[23] = ;
 
         let output = this.#nn.predict(inputs);
         switch (output.indexOf(Math.max(...output))){

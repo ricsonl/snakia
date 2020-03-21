@@ -19,8 +19,8 @@ class Game {
         this.#snakes = [];
         this.#fruits = [];
         for(let i=0; i<s; i++){
-            this.#snakes[i] = new Snake(Math.floor(w / 2), Math.floor(h / 2), this);
             this.#fruits[i]= new Fruit(Math.floor(Math.random() * (w-2) +2), Math.floor(Math.random() * (h-2) +2), this);
+            this.#snakes[i] = new Snake(Math.floor(w / 2), Math.floor(h / 2), this, this.#fruits[i]);
         }
 
         createCanvas(this.getWidth()*this.getPixel(), this.getHeight()*this.getPixel());
@@ -59,6 +59,7 @@ class Game {
         for(let i=0; i<this.#snakes.length; i++){
             this.#snakes[i].display();
             if(!this.#snakes[i].checkCollision()){
+                this.#snakes[i].drawDist();
                 this.#snakes[i].updatePos();
                 this.#fruits[i].display();
                 let body = this.#snakes[i].getBody();

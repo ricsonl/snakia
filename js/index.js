@@ -1,7 +1,7 @@
 
 function setup(){
     game = new Game(65, 65, 15, 2);
-    game.aiControlSnake();
+    //game.aiControlSnake();
 }
 
 function draw(){
