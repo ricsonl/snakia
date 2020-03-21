@@ -75,8 +75,9 @@ class Snake {
         let tail = this.#body[this.#body.length -1];
         let food = this.#fruit.getPos();
 
-        stroke(color(255, 190, 20));
         strokeWeight(0.5);
+
+        stroke(color(255, 190, 20));
         //N->food
         line(head.x, head.y - pixel, food.x, food.y);
         //E->food
@@ -86,6 +87,7 @@ class Snake {
         //W->food
         line(head.x - pixel, head.y, food.x, food.y);
 
+        stroke(color(0, 255, 0));
         //N->tail
         line(head.x, head.y-pixel, tail.x, tail.y);
         //E->tail
@@ -95,6 +97,7 @@ class Snake {
         //W->tail
         line(head.x - pixel, head.y, tail.x, tail.y);
 
+        stroke(color(50, 120, 255));
         //N->wall
         line(head.x, head.y-pixel, head.x, 0);
         //E->wall
