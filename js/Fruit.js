@@ -4,11 +4,11 @@ class Fruit {
 
     #color = undefined;
 
-    constructor(x, y, g) {   
+    constructor(x, y, c, g) {   
         this.#game = g;
         this.#pos = { x: x*g.getPixel(), y: y*g.getPixel() };
 
-        this.#color = color(255, 190, 20);
+        this.#color = c;
     }
 
     getGame() {

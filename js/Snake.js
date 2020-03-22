@@ -15,7 +15,7 @@ class Snake {
 
     #last = undefined;
 
-    constructor(x, y, g, f){
+    constructor(x, y, c, g, f){
         this.#dead = false;
         this.#game = g;
         this.#fruit = f;
@@ -41,7 +41,7 @@ class Snake {
 
         this.#nn = new NeuralNetwork(15, [9,9], 3);
 
-        this.#color = color(255, 255, 255);
+        this.#color = c;
 
         this.#last = [];
     }
@@ -132,10 +132,8 @@ class Snake {
 
     drawDist(){
         strokeWeight(0.5);
+        stroke(this.#color);
         Object.entries(this.#targets).map((t) =>{
-            if (t[0] == 'food') stroke(color(255, 190, 20));
-            else if (t[0] == 'tail') stroke(color(0, 255, 0));
-            else stroke(color(50, 120, 255));
             Object.values(this.#points).map((d) => {
                 line(t[1].x, t[1].y, d.x, d.y);
             });
@@ -189,15 +187,13 @@ class Snake {
         }
 
         this.#last.unshift(dir);
-        if(this.#last.length == this.#game.getWidth()){
+        if(this.#last[0] != 'ahead' && this.#last.length >= 25){
             this.#last.pop();
             if(this.#last.every((val, i, arr) => val === arr[0])){
-                this.#color = color(255, 0, 0);
-                this.#fruit.setColor(color(255, 0, 0));
                 this.#dead = true;
             }
         }
-        
+
     }
 
     grow() {
@@ -215,8 +211,6 @@ class Snake {
             this.#body[0].x >= width * pixel ||
             this.#body[0].y >= height * pixel
             ){
-                this.#color = color(255, 0, 0);
-                this.#fruit.setColor(color(255, 0, 0));
                 this.#dead = true;
             }
             
@@ -226,8 +220,6 @@ class Snake {
         for (let i = 1; i < this.#body.length - 1; i++) {
             let segm = this.#body[i];
             if (segm.x == _x && segm.y == _y){
-                this.#color = color(255, 0, 0);
-                this.#fruit.setColor(color(255, 0, 0));
                 this.#dead = true;
             }
         }

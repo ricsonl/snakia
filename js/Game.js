@@ -20,9 +20,10 @@ class Game {
         this.#num = s;
         this.snakes = [];
         this.fruits = [];
-        for(let i = 0; i < s; i++){
-            this.fruits[i]= new Fruit(Math.floor(Math.random() * (w-2) +2), Math.floor(Math.random() * (h-2) +2), this);
-            this.snakes[i] = new Snake(Math.floor(w / 2), Math.floor(h*(7/8)), this, this.fruits[i]);
+        for (let i = 0; i < this.#num; i++) {
+            const randColor = color("hsl(" + Math.round(360 * i / this.#num) + ",80%,50%)");
+            this.fruits[i] = new Fruit(Math.floor(Math.random() * (this.#width - 2) + 2), Math.floor(Math.random() * (this.#height - 2) + 2), randColor, this);
+            this.snakes[i] = new Snake(Math.floor(this.#width / 2), Math.floor(this.#height * (7 / 8)), randColor, this, this.fruits[i]);
         }
 
         createCanvas(this.getWidth()*this.getPixel(), this.getHeight()*this.getPixel());
@@ -82,8 +83,9 @@ class Game {
 
     nextGeneration() {
         for (let i = 0; i < this.#num; i++) {
-            this.fruits[i] = new Fruit(Math.floor(Math.random() * (this.#width - 2) + 2), Math.floor(Math.random() * (this.#height - 2) + 2), this);
-            this.snakes[i] = new Snake(Math.floor(this.#width / 2), Math.floor(this.#height * (7 / 8)), this, this.fruits[i]);
+            const randColor = color("hsl(" + Math.round(360 * i / this.#num) + ",80%,50%)");
+            this.fruits[i] = new Fruit(Math.floor(Math.random() * (this.#width - 2) + 2), Math.floor(Math.random() * (this.#height - 2) + 2), randColor, this);
+            this.snakes[i] = new Snake(Math.floor(this.#width / 2), Math.floor(this.#height * (7 / 8)), randColor, this, this.fruits[i]);
         }
     }
 }
