@@ -62,11 +62,11 @@ class Game {
                     this.#fruits[i].setPos(Math.floor(Math.random() * (this.getWidth() - 2) + 2), Math.floor(Math.random() * (this.getHeight() - 2) + 2));
                 }
                 this.#snakes[i].think();
-                //this.#snakes[i].drawDist();
+                this.#snakes[i].drawDist();
             }
             this.#snakes[i].display();
             this.#fruits[i].display();
-            if(this.#snakes[i].isDead()) this.removeSnake(i);
+            if (this.#snakes[i].isDead()) this.removeSnake(i);
         }
 
         if(this.#snakes.length == 0){
@@ -81,22 +81,27 @@ class Game {
     removeSnake(i){
         const deadSnake = this.#snakes.splice(i, 1)[0];
         this.#backup.push({ 
-                        'brain': deadSnake.getBrain(),
-                        'score': deadSnake.getScore(),
-                        'distScore': deadSnake.calculateDistScore(),
-                        'fitness': deadSnake.getFitness(),
-                        'color': deadSnake.getColor()
-                        });
+            'brain': deadSnake.getBrain(),
+            'score': deadSnake.getScore(),
+            'distScore': deadSnake.calculateDistScore(),
+            'fitness': undefined,
+            'color': deadSnake.getColor()
+        });
         this.#fruits.splice(i, 1);
+    }
+
+    calculateFinalScore(i){
+        return (this.#backup[i]['score'] + (this.#backup[i]['distScore'])/1+(this.#backup[i]['score']));
     }
 
     calculateFitness(){
         let sum = 0;
         for(let i=0; i < this.#backup.length; i++){
-            sum += 999999 * this.#backup[i]['score'] + 10 * this.#backup[i]['distScore'];
+            sum += this.calculateFinalScore(i);
         }
+        console.log(sum);
         for(let i=0; i < this.#backup.length; i++){
-            this.#backup[i]['fitness'] = (999999 * this.#backup[i]['score'] + 10 * this.#backup[i]['distScore']) / sum;
+            this.#backup[i]['fitness'] = this.calculateFinalScore(i) / sum;
         }
     }
 

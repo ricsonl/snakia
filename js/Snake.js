@@ -23,7 +23,6 @@ class Snake {
     
     #brain = undefined;
     #score = undefined;
-    #fitness = undefined;
 
     #lastMoves = undefined;
     #lastScores = undefined;
@@ -52,13 +51,10 @@ class Snake {
         this.#dir = 'U';
         this.setPT(this.#dir);
 
-        this.#brain = new NeuralNetwork(15, 9, 3);
-
         this.#color = c;
-
         
+        this.#brain = new NeuralNetwork(9, 6, 3);
         this.#score = 0;
-        this.#fitness = 0;
         this.#lastMoves = [];
         this.#lastScores = [0,];
     }
@@ -87,9 +83,6 @@ class Snake {
     }
     getScore(){
         return this.#score.valueOf();
-    }
-    getFitness(){
-        return this.#fitness.valueOf();
     }
 
     setPT(dir){
@@ -157,9 +150,6 @@ class Snake {
         this.#color = c;
     }
 
-    setFitness(f){
-        this.#fitness = f;
-    }
     setBrain(b){
         this.#brain = b;
     }
@@ -168,8 +158,12 @@ class Snake {
         strokeWeight(0.5);
         stroke(this.#color);
         Object.entries(this.#targets).map((t) =>{
-            Object.values(this.#points).map((d) => {
-                line(t[1].x, t[1].y, d.x, d.y);
+            Object.entries(this.#points).map((d) => {
+                if (
+                    (t[0] == 'aWall' && (d[0] == 'right' || d[0] == 'left')) ||
+                    (t[0] == 'rWall' && (d[0] == 'ahead' || d[0] == 'left')) ||
+                    (t[0] == 'lWall' && (d[0] == 'ahead' || d[0] == 'right'))
+                ){} else line(t[1].x, t[1].y, d[1].x, d[1].y);
             });
         })
     }
@@ -231,7 +225,7 @@ class Snake {
         this.#lastScores.unshift(this.#score);
         if (this.#score > this.#lastScores[1])
         this.#lastScores = [];
-        else if (this.#lastScores.length >= 160) {
+        else if (this.#lastScores.length >= 350) {
             if (this.#lastScores.every((val, i, arr) => val === arr[0])) {
                 this.#dead = true;
             }
@@ -298,9 +292,19 @@ class Snake {
 
         Object.entries(this.#targets).map((t) => {
             Object.entries(this.#points).map((d) => {
-                let c1 = (t[1].x - d[1].x) / pixel;
-                let c2 = (t[1].y - d[1].y) / pixel;
-                inputs.push(Math.sqrt( c1*c1 + c2*c2 ));
+                if (
+                    (t[0] == 'aWall' && (d[0] == 'right' || d[0] == 'left')) ||
+                    (t[0] == 'rWall' && (d[0] == 'ahead' || d[0] == 'left')) ||
+                    (t[0] == 'lWall' && (d[0] == 'ahead' || d[0] == 'right'))
+                ){} else if(t[0] == 'tail'){
+                    const c1 = (t[1].x - d[1].x) / pixel;
+                    const c2 = (t[1].y - d[1].y) / pixel;
+                    inputs.push(this.#score * Math.sqrt( c1*c1 + c2*c2 ));
+                } else {
+                    const c1 = (t[1].x - d[1].x) / pixel;
+                    const c2 = (t[1].y - d[1].y) / pixel;
+                    inputs.push(Math.sqrt( c1*c1 + c2*c2 ));
+                }
             });
         });
 
@@ -325,7 +329,7 @@ class Snake {
         
         const distToFood = Math.sqrt(c1 * c1 + c2 * c2) / this.#game.getPixel();
 
-        return diag - distToFood;
+        return (diag - distToFood);
     }
 
     mutate() {
