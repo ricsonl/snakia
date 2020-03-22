@@ -1,6 +1,6 @@
 
 function setup(){
-    game = new Game(65, 65, 15, 3);
+    game = new Game(65, 65, 15, 200);
 }
 
 function draw(){

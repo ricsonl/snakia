@@ -25,6 +25,7 @@ class Snake {
     #score = undefined;
     #fitness = undefined;
 
+    #lastMoves = undefined;
     #lastScores = undefined;
 
     constructor(x, y, c, g, f){
@@ -58,6 +59,7 @@ class Snake {
         
         this.#score = 0;
         this.#fitness = 0;
+        this.#lastMoves = [];
         this.#lastScores = [0,];
     }
 
@@ -218,11 +220,19 @@ class Snake {
                 break;
         }
 
+        this.#lastMoves.unshift(dir);
+        if (this.#lastMoves[0] != 'ahead' && this.#lastMoves.length >= 25) {
+            this.#lastMoves.pop();
+            if (this.#lastMoves.every((val, i, arr) => val === arr[0])) {
+                this.#dead = true;
+            }
+        }
+
         this.#lastScores.unshift(this.#score);
-        if(this.#score > this.#lastScores[1])
-            this.#lastScores = [];
-        else if(this.#lastScores.length >= 180){
-            if(this.#lastScores.every((val, i, arr) => val === arr[0])){
+        if (this.#score > this.#lastScores[1])
+        this.#lastScores = [];
+        else if (this.#lastScores.length >= 160) {
+            if (this.#lastScores.every((val, i, arr) => val === arr[0])) {
                 this.#dead = true;
             }
         }
@@ -306,6 +316,16 @@ class Snake {
                 this.walk('right');
                 break;
         }
+    }
+
+    calculateDistScore() {
+        const c1 = this.#body[0].x - this.#fruit.getPos().x;
+        const c2 = this.#body[0].y - this.#fruit.getPos().y;
+        const diag = Math.sqrt(this.#game.getHeight() * this.#game.getHeight() + this.#game.getWidth() * this.#game.getWidth());
+        
+        const distToFood = Math.sqrt(c1 * c1 + c2 * c2) / this.#game.getPixel();
+
+        return diag - distToFood;
     }
 
     mutate() {

@@ -29,7 +29,7 @@ class Game {
         }
 
         createCanvas(this.getWidth()*this.getPixel(), this.getHeight()*this.getPixel());
-        frameRate(10);
+        frameRate(200);
     }
     
     getPixel(){
@@ -62,7 +62,7 @@ class Game {
                     this.#fruits[i].setPos(Math.floor(Math.random() * (this.getWidth() - 2) + 2), Math.floor(Math.random() * (this.getHeight() - 2) + 2));
                 }
                 this.#snakes[i].think();
-                this.#snakes[i].drawDist();
+                //this.#snakes[i].drawDist();
             }
             this.#snakes[i].display();
             this.#fruits[i].display();
@@ -83,6 +83,7 @@ class Game {
         this.#backup.push({ 
                         'brain': deadSnake.getBrain(),
                         'score': deadSnake.getScore(),
+                        'distScore': deadSnake.calculateDistScore(),
                         'fitness': deadSnake.getFitness(),
                         'color': deadSnake.getColor()
                         });
@@ -92,10 +93,10 @@ class Game {
     calculateFitness(){
         let sum = 0;
         for(let i=0; i < this.#backup.length; i++){
-            sum += this.#backup[i]['score'];
+            sum += 999999 * this.#backup[i]['score'] + 10 * this.#backup[i]['distScore'];
         }
         for(let i=0; i < this.#backup.length; i++){
-            this.#backup[i]['fitness'] = (this.#backup[i]['score'] / sum);
+            this.#backup[i]['fitness'] = (999999 * this.#backup[i]['score'] + 10 * this.#backup[i]['distScore']) / sum;
         }
     }
 
@@ -103,7 +104,6 @@ class Game {
         let index = 0;
         let r = random(1);
         while(r > 0){
-            console.log(this.#backup[index]['fitness']);
             r = r - this.#backup[index]['fitness'];
             index++;
         }
