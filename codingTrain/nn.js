@@ -1,5 +1,7 @@
 //GOT FROM https://github.com/CodingTrain/Toy-Neural-Network-JS
 
+// Other techniques for learning
+
 class ActivationFunction {
     constructor(func, dfunc) {
         this.func = func;
@@ -19,46 +21,61 @@ let tanh = new ActivationFunction(
 
 
 class NeuralNetwork {
-    constructor(input_nodes, hidden_nodes, output_nodes) {
-        this.input_nodes = input_nodes;
-        // Checking if hidden nodes is an integer
-        // If so convert it to an array with one entry
-        if (Number.isInteger(hidden_nodes)) {
-            this.hidden_nodes = [hidden_nodes];
+    /*
+    * if first argument is a NeuralNetwork the constructor clones it
+    * USAGE: cloned_nn = new NeuralNetwork(to_clone_nn);
+    */
+    constructor(in_nodes, hid_nodes, out_nodes) {
+        if (in_nodes instanceof NeuralNetwork) {
+            let a = in_nodes;
+            this.input_nodes = a.input_nodes;
+            this.hidden_nodes = a.hidden_nodes;
+            this.output_nodes = a.output_nodes;
+
+            this.weights_ih = a.weights_ih.copy();
+            this.weights_ho = a.weights_ho.copy();
+
+            this.bias_h = a.bias_h.copy();
+            this.bias_o = a.bias_o.copy();
         } else {
-            this.hidden_nodes = hidden_nodes;
-        }
-        this.output_nodes = output_nodes;
+            this.input_nodes = in_nodes;
+            this.hidden_nodes = hid_nodes;
+            this.output_nodes = out_nodes;
 
-        // Creating the Layers of the Neural Network
-        // ! The last Layer is the output layer
-        this.layer = [];
-        this.layer.push(new NeuralNetworkLayer(this, this.input_nodes, this.hidden_nodes[0]));
-        // Loop hidden layers except for the first and last, set manuelly
-        for (let i = 1; i < this.hidden_nodes.length; i++) {
-            // input_nodes for NeuralNetworkLayer is always the previous Layer
-            this.layer.push(new NeuralNetworkLayer(this, this.hidden_nodes[i - 1], this.hidden_nodes[i]));
-        }
-        // hidden_nodes.length is the last entry at that time
-        this.layer.push(new NeuralNetworkLayer(this, this.hidden_nodes[this.hidden_nodes.length - 1], this.output_nodes));
+            this.weights_ih = new Matrix(this.hidden_nodes, this.input_nodes);
+            this.weights_ho = new Matrix(this.output_nodes, this.hidden_nodes);
+            this.weights_ih.randomize();
+            this.weights_ho.randomize();
 
+            this.bias_h = new Matrix(this.hidden_nodes, 1);
+            this.bias_o = new Matrix(this.output_nodes, 1);
+            this.bias_h.randomize();
+            this.bias_o.randomize();
+        }
+
+        // TODO: copy these as well
         this.setLearningRate();
         this.setActivationFunction();
+
 
     }
 
     predict(input_array) {
 
+        // Generating the Hidden Outputs
         let inputs = Matrix.fromArray(input_array);
+        let hidden = Matrix.multiply(this.weights_ih, inputs);
+        hidden.add(this.bias_h);
+        // activation function!
+        hidden.map(this.activation_function.func);
 
-        let prediction = inputs;
-        // Loop layer over the inputs
-        for (let i = 0; i < this.layer.length; i++) {
-            prediction = this.layer[i].predict(prediction);
-        }
+        // Generating the output's output!
+        let output = Matrix.multiply(this.weights_ho, hidden);
+        output.add(this.bias_o);
+        output.map(this.activation_function.func);
 
-        // Sending prediction to the caller!
-        return prediction.toArray();
+        // Sending back to the caller!
+        return output.toArray();
     }
 
     setLearningRate(learning_rate = 0.1) {
@@ -68,100 +85,96 @@ class NeuralNetwork {
     setActivationFunction(func = sigmoid) {
         this.activation_function = func;
     }
-    
-    train(input_array, target_array) {
-        // Convert input arrays to matrix objects
-        let inputs = Matrix.fromArray(input_array);
-        let targets = Matrix.fromArray(target_array);
-        let predictions = [];
-        let prediction = inputs;
-        // Loop layer over the inputs
-        for (let i = 0; i < this.layer.length; i++) {
-            prediction = this.layer[i].predict(prediction);
-            predictions.push(prediction);
-        }
 
-        // Last layer == output layer
-        let outputs = predictions[predictions.length - 1];
+    train(input_array, target_array) {
+        // Generating the Hidden Outputs
+        let inputs = Matrix.fromArray(input_array);
+        let hidden = Matrix.multiply(this.weights_ih, inputs);
+        hidden.add(this.bias_h);
+        // activation function!
+        hidden.map(this.activation_function.func);
+
+        // Generating the output's output!
+        let outputs = Matrix.multiply(this.weights_ho, hidden);
+        outputs.add(this.bias_o);
+        outputs.map(this.activation_function.func);
+
+        // Convert array to matrix object
+        let targets = Matrix.fromArray(target_array);
+
         // Calculate the error
         // ERROR = TARGETS - OUTPUTS
-        let current_errors = Matrix.subtract(targets, outputs);
-        for (let i = this.layer.length - 1; i >= 0; i--) {
-            // Calculate deltas
-            if (i == 0) {
-                current_errors = this.layer[i].applyError(predictions[i], inputs, current_errors);
-            } else {
-                current_errors = this.layer[i].applyError(predictions[i], predictions[i - 1], current_errors);
-            }
-        }
+        let output_errors = Matrix.subtract(targets, outputs);
+
+        // let gradient = outputs * (1 - outputs);
+        // Calculate gradient
+        let gradients = Matrix.map(outputs, this.activation_function.dfunc);
+        gradients.multiply(output_errors);
+        gradients.multiply(this.learning_rate);
+
+
+        // Calculate deltas
+        let hidden_T = Matrix.transpose(hidden);
+        let weight_ho_deltas = Matrix.multiply(gradients, hidden_T);
+
+        // Adjust the weights by deltas
+        this.weights_ho.add(weight_ho_deltas);
+        // Adjust the bias by its deltas (which is just the gradients)
+        this.bias_o.add(gradients);
+
+        // Calculate the hidden layer errors
+        let who_t = Matrix.transpose(this.weights_ho);
+        let hidden_errors = Matrix.multiply(who_t, output_errors);
+
+        // Calculate hidden gradient
+        let hidden_gradient = Matrix.map(hidden, this.activation_function.dfunc);
+        hidden_gradient.multiply(hidden_errors);
+        hidden_gradient.multiply(this.learning_rate);
+
+        // Calcuate input->hidden deltas
+        let inputs_T = Matrix.transpose(inputs);
+        let weight_ih_deltas = Matrix.multiply(hidden_gradient, inputs_T);
+
+        this.weights_ih.add(weight_ih_deltas);
+        // Adjust the bias by its deltas (which is just the gradients)
+        this.bias_h.add(hidden_gradient);
+
+        // outputs.print();
+        // targets.print();
+        // error.print();
     }
 
     serialize() {
-        let cache = [];
-        let result = JSON.stringify(this, (key, value) => {
-            if (typeof value === 'object' && value !== null) {
-                if (cache.indexOf(value) !== -1) {
-                    // Circular reference found, discard key
-                    return;
-                }
-                // Store value in our collection
-                cache.push(value);
-            }
-            return value;
-        });
-        cache = null;
-        return result;
+        return JSON.stringify(this);
     }
 
     static deserialize(data) {
-        if (typeof data == 'string') 
-        {
+        if (typeof data == 'string') {
             data = JSON.parse(data);
-            console.log(data);
         }
         let nn = new NeuralNetwork(data.input_nodes, data.hidden_nodes, data.output_nodes);
-        let layerCache = [];
-        data.layer.map(obj => {
-            let nnlayer = new NeuralNetworkLayer(nn, obj.weights.cols, obj.weights.rows);
-            nnlayer.weights = Matrix.deserialize(obj.weights);
-            nnlayer.bias = Matrix.deserialize(obj.bias);
-            layerCache.push(nnlayer);
-        });
-        nn.layer = layerCache;
+        nn.weights_ih = Matrix.deserialize(data.weights_ih);
+        nn.weights_ho = Matrix.deserialize(data.weights_ho);
+        nn.bias_h = Matrix.deserialize(data.bias_h);
+        nn.bias_o = Matrix.deserialize(data.bias_o);
+        nn.learning_rate = data.learning_rate;
         return nn;
     }
 
-}
 
-class NeuralNetworkLayer {
-    constructor(parent, input_nodes, nodes) {
-        this.parent = parent;
-        this.weights = new Matrix(nodes, input_nodes);
-        this.weights.randomize();
-        this.bias = new Matrix(nodes, 1);
-        this.bias.randomize();
+    // Adding function for neuro-evolution
+    copy() {
+        return new NeuralNetwork(this);
     }
 
-    predict(input_matrix) {
-        let prediction = Matrix.multiply(this.weights, input_matrix);
-        prediction.add(this.bias);
-        prediction.map(this.parent.activation_function.func);
-        return prediction;
+    // Accept an arbitrary function for mutation
+    mutate(func) {
+        this.weights_ih.map(func);
+        this.weights_ho.map(func);
+        this.bias_h.map(func);
+        this.bias_o.map(func);
     }
-    applyError(prediction, previousPrediction, current_errors) {
-    // Calculate the gradients for the layer
-        let gradients = Matrix.map(prediction, this.parent.activation_function.dfunc);
-        gradients.multiply(current_errors);
-        gradients.multiply(this.parent.learning_rate);
-        // Calculate deltas
-        let previousPredictionTranspose = Matrix.transpose(previousPrediction);
-        let weight_deltas = Matrix.multiply(gradients, previousPredictionTranspose);
-        //Apply Errors to the weights and the bias
-        this.weights.add(weight_deltas);
-        this.bias.add(gradients);
-        // Calculate the next layer errors
-        let weightsTranspose = Matrix.transpose(this.weights);
-        current_errors = Matrix.multiply(weightsTranspose, current_errors);
-        return current_errors;
-    }
+
+
+
 }

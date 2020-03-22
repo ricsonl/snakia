@@ -9,11 +9,13 @@ class Snake {
     #points = undefined;
     #targets = undefined;
 
-    #nn = undefined;
-
     #color = undefined;
-
+    
     #last = undefined;
+    
+    #brain = undefined;
+    #score = undefined;
+    #fitness = undefined;
 
     constructor(x, y, c, g, f){
         this.#dead = false;
@@ -39,11 +41,14 @@ class Snake {
         this.#dir = 'U';
         this.setPT(this.#dir);
 
-        this.#nn = new NeuralNetwork(15, [9,9], 3);
+        this.#brain = new NeuralNetwork(15, 9, 3);
 
         this.#color = c;
 
         this.#last = [];
+
+        this.#score = 0;
+        this.#fitness = 0;
     }
 
     isDead(){
@@ -63,6 +68,16 @@ class Snake {
     }
     getColor(){
         return color(this.#color);
+    }
+
+    getBrain(){
+        return new NeuralNetwork(this.#brain);
+    }
+    getScore(){
+        return this.#score.valueOf();
+    }
+    getFitness(){
+        return this.#fitness.valueOf();
     }
 
     setPT(dir){
@@ -130,6 +145,13 @@ class Snake {
         this.#color = c;
     }
 
+    setFitness(f){
+        this.#fitness = f;
+    }
+    setBrain(b){
+        this.#brain = b;
+    }
+
     drawDist(){
         strokeWeight(0.5);
         stroke(this.#color);
@@ -187,7 +209,7 @@ class Snake {
         }
 
         this.#last.unshift(dir);
-        if(this.#last[0] != 'ahead' && this.#last.length >= 25){
+        if(this.#last[0] != 'ahead' && this.#last.length >= 35){
             this.#last.pop();
             if(this.#last.every((val, i, arr) => val === arr[0])){
                 this.#dead = true;
@@ -198,6 +220,7 @@ class Snake {
 
     grow() {
         this.#body.push(this.#body[this.#body.length - 1]);
+        this.#score++;
     }
 
     checkCollision() {
@@ -260,7 +283,7 @@ class Snake {
             });
         });
 
-        let output = this.#nn.predict(inputs);
+        let output = this.#brain.predict(inputs);
         switch (output.indexOf(Math.max(...output))){
             case 0:
                 this.walk('left');
