@@ -103,7 +103,7 @@ class Game {
         
         let child = new Snake(Math.floor(this.#width / 2), Math.floor(this.#height * (7 / 8)), childB['color'], this, fruit);
         child.setBrain(childB['brain']);
-
+        child.mutate();
         return child;
     }
 

@@ -1,3 +1,13 @@
+function mutateFunc(x) {
+    if (random(1) < 0.1) {
+        let offset = randomGaussian() * 0.5;
+        let newx = x + offset;
+        return newx;
+    } else {
+        return x;
+    }
+}
+
 class Snake {
     #dead = undefined;
 
@@ -11,7 +21,7 @@ class Snake {
 
     #color = undefined;
     
-    #last = undefined;
+    #lastMoves = undefined;
     
     #brain = undefined;
     #score = undefined;
@@ -45,7 +55,7 @@ class Snake {
 
         this.#color = c;
 
-        this.#last = [];
+        this.#lastMoves = [];
 
         this.#score = 0;
         this.#fitness = 0;
@@ -208,10 +218,10 @@ class Snake {
                 break;
         }
 
-        this.#last.unshift(dir);
-        if(this.#last[0] != 'ahead' && this.#last.length >= 35){
-            this.#last.pop();
-            if(this.#last.every((val, i, arr) => val === arr[0])){
+        this.#lastMoves.unshift(dir);
+        if(this.#lastMoves[0] != 'ahead' && this.#lastMoves.length >= 35){
+            this.#lastMoves.pop();
+            if(this.#lastMoves.every((val, i, arr) => val === arr[0])){
                 this.#dead = true;
             }
         }
@@ -295,5 +305,9 @@ class Snake {
                 this.walk('right');
                 break;
         }
+    }
+
+    mutate() {
+        this.#brain.mutate(mutateFunc);
     }
 }
