@@ -21,11 +21,11 @@ class Snake {
 
     #color = undefined;
     
-    #lastMoves = undefined;
-    
     #brain = undefined;
     #score = undefined;
     #fitness = undefined;
+
+    #lastScores = undefined;
 
     constructor(x, y, c, g, f){
         this.#dead = false;
@@ -55,10 +55,10 @@ class Snake {
 
         this.#color = c;
 
-        this.#lastMoves = [];
-
+        
         this.#score = 0;
         this.#fitness = 0;
+        this.#lastScores = [0,];
     }
 
     isDead(){
@@ -218,10 +218,11 @@ class Snake {
                 break;
         }
 
-        this.#lastMoves.unshift(dir);
-        if(this.#lastMoves[0] != 'ahead' && this.#lastMoves.length >= 35){
-            this.#lastMoves.pop();
-            if(this.#lastMoves.every((val, i, arr) => val === arr[0])){
+        this.#lastScores.unshift(this.#score);
+        if(this.#score > this.#lastScores[1])
+            this.#lastScores = [];
+        else if(this.#lastScores.length >= 180){
+            if(this.#lastScores.every((val, i, arr) => val === arr[0])){
                 this.#dead = true;
             }
         }

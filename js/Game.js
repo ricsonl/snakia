@@ -82,6 +82,8 @@ class Game {
         const deadSnake = this.#snakes.splice(i, 1)[0];
         this.#backup.push({ 
                         'brain': deadSnake.getBrain(),
+                        'score': deadSnake.getScore(),
+                        'fitness': deadSnake.getFitness(),
                         'color': deadSnake.getColor()
                         });
         this.#fruits.splice(i, 1);
@@ -89,20 +91,28 @@ class Game {
 
     calculateFitness(){
         let sum = 0;
-        for(let i=0; i < this.#snakes.length; i++){
-            sum += this.#snakes[i].getScore();
+        for(let i=0; i < this.#backup.length; i++){
+            sum += this.#backup[i]['score'];
         }
-        for(let i=0; i < this.#snakes.length; i++){
-            this.#snakes[i].setFitness(this.#snakes[i].getScore() / sum);
+        for(let i=0; i < this.#backup.length; i++){
+            this.#backup[i]['fitness'] = (this.#backup[i]['score'] / sum);
         }
     }
 
     pickOne(){
-        const childB = random(this.#backup);
-        const fruit = new Fruit(Math.floor(Math.random() * (this.#width - 2) + 2), Math.floor(Math.random() * (this.#height - 2) + 2), childB['color'], this);
-        
-        let child = new Snake(Math.floor(this.#width / 2), Math.floor(this.#height * (7 / 8)), childB['color'], this, fruit);
-        child.setBrain(childB['brain']);
+        let index = 0;
+        let r = random(1);
+        while(r > 0){
+            console.log(this.#backup[index]['fitness']);
+            r = r - this.#backup[index]['fitness'];
+            index++;
+        }
+        index--;
+        const childBrain = this.#backup[index]['brain'];
+        const childColor = this.#backup[index]['color'];
+        const fruit = new Fruit(Math.floor(Math.random() * (this.#width - 2) + 2), Math.floor(Math.random() * (this.#height - 2) + 2), childColor, this);
+        let child = new Snake(Math.floor(this.#width / 2), Math.floor(this.#height * (7 / 8)), childColor, this, fruit);
+        child.setBrain(childBrain);
         child.mutate();
         return child;
     }
