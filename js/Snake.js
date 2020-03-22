@@ -9,10 +9,10 @@ function mutateFunc(x) {
 }
 
 class Snake {
+    fruit = undefined;
+    
+    #population = undefined;
     #dead = undefined;
-
-    #game = undefined;
-    #fruit = undefined;
 
     #body = undefined;
     #dir = undefined;
@@ -27,14 +27,14 @@ class Snake {
     #lastMoves = undefined;
     #lastScores = undefined;
 
-    constructor(x, y, c, g, f){
+    constructor(x, y, c, p){
         this.#dead = false;
-        this.#game = g;
-        this.#fruit = f;
+        this.#population = p;
+        this.fruit = new Fruit(Math.floor(Math.random() * (this.#population.game.getWidth() - 2) + 2), Math.floor(Math.random() * (this.#population.game.getHeight() - 2) + 2), c, this.#population.game);
         this.#body = [
-                        { x: x*g.getPixel(), y: y*g.getPixel() }, 
-                        { x: x*g.getPixel(), y: (y+1)*g.getPixel() }, 
-                        { x: x*g.getPixel(), y: (y+2)*g.getPixel() }
+                        { x: x*p.game.getPixel(), y: y*p.game.getPixel() }, 
+                        { x: x*p.game.getPixel(), y: (y+1)*p.game.getPixel() }, 
+                        { x: x*p.game.getPixel(), y: (y+2)*p.game.getPixel() }
                     ];
         this.#points = {
             'ahead': undefined,
@@ -62,12 +62,8 @@ class Snake {
     isDead(){
         return (this.#dead ? true:false);
     }
-    getGame(){
-        return this.#game;
-    }
-    getFruit(){
-        return this.#fruit;
-    }
+
+   
     getBody(){ 
         return this.#body.slice();
     }
@@ -87,12 +83,12 @@ class Snake {
 
     setPT(dir){
         const head = this.#body[0];
-        const pixel = this.#game.getPixel();
-        const width = this.#game.getWidth();
-        const height = this.#game.getHeight();
+        const pixel = this.#population.game.getPixel();
+        const width = this.#population.game.getWidth();
+        const height = this.#population.game.getHeight();
 
         this.#targets['tail'] = this.#body[this.#body.length - 1];
-        this.#targets['food'] = this.#fruit.getPos();
+        this.#targets['food'] = this.fruit.getPos();
 
         switch(dir){
             case 'U':
@@ -142,14 +138,6 @@ class Snake {
         }
     }
 
-    setFruit(f){
-        this.#fruit = f;
-    }
-
-    setColor(c){
-        this.#color = c;
-    }
-
     setBrain(b){
         this.#brain = b;
     }
@@ -170,7 +158,7 @@ class Snake {
 
     display(){
         stroke(this.getColor());
-        strokeWeight(this.#game.getPixel());
+        strokeWeight(this.#population.game.getPixel());
         const body = this.getBody();
 
         let prev = body[0];
@@ -184,6 +172,8 @@ class Snake {
                 line(prev.x, prev.y, curr.x, curr.y);
             }
         }
+
+        this.fruit.display();
     }
 
     walk(dir) {
@@ -230,7 +220,6 @@ class Snake {
                 this.#dead = true;
             }
         }
-
     }
 
     grow() {
@@ -239,9 +228,9 @@ class Snake {
     }
 
     checkCollision() {
-        const pixel = this.#game.getPixel();
-        const width = this.#game.getWidth();
-        const height = this.#game.getHeight();
+        const pixel = this.#population.game.getPixel();
+        const width = this.#population.game.getWidth();
+        const height = this.#population.game.getHeight();
 
         if (
             this.#body[0].y <= 0 ||
@@ -265,30 +254,9 @@ class Snake {
         return this.#dead;
     }
 
-    humanControl(key) {
-        switch (key) {
-            case 38:
-                if (this.#dir != 'D')
-                    this.#dir = 'U';
-                break;
-            case 39:
-                if (this.#dir != 'L')
-                    this.#dir = 'R';
-                break;
-            case 40:
-                if (this.#dir != 'U')
-                    this.#dir = 'D';
-                break;
-            case 37:
-                if (this.#dir != 'R')
-                    this.#dir = 'L';
-                break;
-        }
-    }
-
     think(){
         let inputs = [];
-        let pixel = this.#game.getPixel();
+        let pixel = this.#population.game.getPixel();
 
         Object.entries(this.#targets).map((t) => {
             Object.entries(this.#points).map((d) => {
@@ -323,11 +291,11 @@ class Snake {
     }
 
     calculateDistScore() {
-        const c1 = this.#body[0].x - this.#fruit.getPos().x;
-        const c2 = this.#body[0].y - this.#fruit.getPos().y;
-        const diag = Math.sqrt(this.#game.getHeight() * this.#game.getHeight() + this.#game.getWidth() * this.#game.getWidth());
+        const c1 = this.#body[0].x - this.fruit.getPos().x;
+        const c2 = this.#body[0].y - this.fruit.getPos().y;
+        const diag = Math.sqrt(this.#population.game.getHeight() * this.#population.game.getHeight() + this.#population.game.getWidth() * this.#population.game.getWidth());
         
-        const distToFood = Math.sqrt(c1 * c1 + c2 * c2) / this.#game.getPixel();
+        const distToFood = Math.sqrt(c1 * c1 + c2 * c2) / this.#population.game.getPixel();
 
         return (diag - distToFood);
     }

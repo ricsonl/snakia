@@ -5,10 +5,7 @@ class Game {
 
     #color = undefined;
 
-    #num = undefined;
-    #snakes = undefined;
-    #backup = undefined;
-    #fruits = undefined;
+    #population = undefined;
 
     constructor(h, w, p, s){
         this.#pixel = p;
@@ -18,18 +15,10 @@ class Game {
 
         this.#color = color(0, 0, 0);
 
-        this.#num = s;
-        this.#snakes = [];
-        this.#backup = [];
-        this.#fruits = [];
-        for (let i = 0; i < this.#num; i++) {
-            const randColor = color("hsl(" + Math.round(360 * i / this.#num) + ",80%,50%)");
-            this.#fruits[i] = new Fruit(Math.floor(Math.random() * (this.#width - 2) + 2), Math.floor(Math.random() * (this.#height - 2) + 2), randColor, this);
-            this.#snakes[i] = new Snake(Math.floor(this.#width / 2), Math.floor(this.#height * (7 / 8)), randColor, this, this.#fruits[i]);
-        }
+        this.#population = new Population(s, this);
 
         createCanvas(this.getWidth()*this.getPixel(), this.getHeight()*this.getPixel());
-        frameRate(200);
+        frameRate(20);
     }
     
     getPixel(){
@@ -45,90 +34,40 @@ class Game {
         return color(this.#color);
     }
 
-    setColor(c){
-        this.#color = c;
-    }
-
     display() {
         noStroke();
 
         fill(this.getColor());
         rect(0, 0, this.getWidth()*this.getPixel(), this.getHeight()*this.getPixel());
    
-        for(let i=0; i<this.#snakes.length; i++){
-            if(!this.#snakes[i].checkCollision()){
-                if (JSON.stringify(this.#snakes[i].getBody()[0]) === JSON.stringify(this.#fruits[i].getPos())) {
-                    this.#snakes[i].grow();
-                    this.#fruits[i].setPos(Math.floor(Math.random() * (this.getWidth() - 2) + 2), Math.floor(Math.random() * (this.getHeight() - 2) + 2));
+        for(let i=0; i<this.#population.snakes.length; i++){
+            if(!this.#population.snakes[i].checkCollision()){
+                if (JSON.stringify(this.#population.snakes[i].getBody()[0]) === JSON.stringify(this.#population.snakes[i].fruit.getPos())) {
+                    this.#population.snakes[i].grow();
+                    this.#population.snakes[i].fruit.setPos(Math.floor(Math.random() * (this.getWidth() - 2) + 2), Math.floor(Math.random() * (this.getHeight() - 2) + 2));
                 }
-                this.#snakes[i].think();
-                this.#snakes[i].drawDist();
+                this.#population.snakes[i].think();
+                this.#population.snakes[i].drawDist();
             }
-            this.#snakes[i].display();
-            this.#fruits[i].display();
-            if (this.#snakes[i].isDead()) this.removeSnake(i);
+            this.#population.snakes[i].display();
+            if (this.#population.snakes[i].isDead()) this.#population.removeSnake(i);
         }
 
-        if(this.#snakes.length == 0){
-            this.nextGeneration();
-        }
-    }
-    
-    humanControlSnake(key){
-        this.#snakes[0].humanControl(key);
-    }
-
-    removeSnake(i){
-        const deadSnake = this.#snakes.splice(i, 1)[0];
-        this.#backup.push({ 
-            'brain': deadSnake.getBrain(),
-            'score': deadSnake.getScore(),
-            'distScore': deadSnake.calculateDistScore(),
-            'fitness': undefined,
-            'color': deadSnake.getColor()
-        });
-        this.#fruits.splice(i, 1);
-    }
-
-    calculateFinalScore(i){
-        return (this.#backup[i]['score'] + (this.#backup[i]['distScore'])/1+(this.#backup[i]['score']));
-    }
-
-    calculateFitness(){
-        let sum = 0;
-        for(let i=0; i < this.#backup.length; i++){
-            sum += this.calculateFinalScore(i);
-        }
-        console.log(sum);
-        for(let i=0; i < this.#backup.length; i++){
-            this.#backup[i]['fitness'] = this.calculateFinalScore(i) / sum;
+        if(this.#population.snakes.length == 0){
+            this.#population = this.#population.nextGeneration();
         }
     }
 
-    pickOne(){
-        let index = 0;
-        let r = random(1);
-        while(r > 0){
-            r = r - this.#backup[index]['fitness'];
-            index++;
+    humanControl(key) {
+        switch (key) {
+            case 39:
+                this.#population.snakes[0].walk('right');
+                break;
+            case 37:
+                this.#population.snakes[0].walk('left');
+                break;
+            default:
+                this.#population.snakes[0].walk('ahead');
         }
-        index--;
-        const childBrain = this.#backup[index]['brain'];
-        const childColor = this.#backup[index]['color'];
-        const fruit = new Fruit(Math.floor(Math.random() * (this.#width - 2) + 2), Math.floor(Math.random() * (this.#height - 2) + 2), childColor, this);
-        let child = new Snake(Math.floor(this.#width / 2), Math.floor(this.#height * (7 / 8)), childColor, this, fruit);
-        child.setBrain(childBrain);
-        child.mutate();
-        return child;
-    }
-
-    nextGeneration() {
-        this.calculateFitness();
-        for (let i = 0; i < this.#num; i++) {
-            const randColor = color("hsl(" + Math.round(360 * i / this.#num) + ",80%,50%)");
-            this.#snakes[i] = this.pickOne();
-            this.#fruits[i] = this.#snakes[i].getFruit();
-        }
-        this.#backup = [];
     }
 }

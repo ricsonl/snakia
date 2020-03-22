@@ -1,19 +1,16 @@
 class Fruit {
-    #game = undefined;
+    game = undefined;
     #pos = undefined;
 
     #color = undefined;
 
     constructor(x, y, c, g) {   
-        this.#game = g;
+        this.game = g;
         this.#pos = { x: x*g.getPixel(), y: y*g.getPixel() };
 
         this.#color = c;
     }
 
-    getGame() {
-        return this.#game;
-    }
     getPos() {
         return JSON.parse(JSON.stringify(this.#pos));
     }
@@ -22,16 +19,15 @@ class Fruit {
     }
 
     setPos(x, y) {
-        this.#pos = { x: x*this.#game.getPixel(), y: y*this.#game.getPixel() };
+        this.#pos = { x: x*this.game.getPixel(), y: y*this.game.getPixel() };
     }
     setColor(c) {
         this.#color = c;
     }
 
     display() {
-        const coord = this.getPos();
-        stroke(this.getColor());
-        strokeWeight(this.#game.getPixel()); 
-        line(coord.x, coord.y, coord.x, coord.y);
+        stroke(this.#color);
+        strokeWeight(this.game.getPixel()); 
+        line(this.#pos.x, this.#pos.y, this.#pos.x, this.#pos.y);
     }
 }
