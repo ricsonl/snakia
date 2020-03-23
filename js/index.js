@@ -1,10 +1,15 @@
 
 function setup(){
-    game = new Game(65, 65, 10, 10);
+    game = new Game(2, 10);
 }
 
 function draw(){
     game.display();
+    displayStats();
+}
+
+function displayStats(){
+
 }
 
 /*function keyPressed() {

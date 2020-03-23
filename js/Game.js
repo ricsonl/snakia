@@ -6,19 +6,21 @@ class Game {
     #color = undefined;
 
     #population = undefined;
+    #generation = undefined;
 
-    constructor(h, w, p, s){
-        this.#pixel = p;
+    constructor(s, f){
+        this.#pixel = 15;
 
-        this.#height = h;
-        this.#width = w;
+        this.#height = (windowHeight - 40) / this.#pixel;
+        this.#width = (windowWidth - 250) / this.#pixel;
 
-        this.#color = color(0, 0, 0);
+        this.#color = color(15, 15, 15);
 
         this.#population = new Population(s, this);
+        this.#generation = 1;
 
-        createCanvas(this.getWidth()*this.getPixel(), this.getHeight()*this.getPixel());
-        frameRate(20);
+        createCanvas(this.#width * this.#pixel, this.#height * this.#pixel);
+        frameRate(f);
     }
     
     getPixel(){
@@ -33,28 +35,33 @@ class Game {
     getColor(){
         return color(this.#color);
     }
+    getGen(){
+        return this.#generation.valueOf();
+    }
 
     display() {
-        noStroke();
+        clear();
+        background(this.getColor());
 
-        fill(this.getColor());
-        rect(0, 0, this.getWidth()*this.getPixel(), this.getHeight()*this.getPixel());
-   
         for(let i=0; i<this.#population.snakes.length; i++){
-            if(!this.#population.snakes[i].checkCollision()){
-                if (JSON.stringify(this.#population.snakes[i].getBody()[0]) === JSON.stringify(this.#population.snakes[i].fruit.getPos())) {
-                    this.#population.snakes[i].grow();
-                    this.#population.snakes[i].fruit.setPos(Math.floor(Math.random() * (this.getWidth() - 2) + 2), Math.floor(Math.random() * (this.getHeight() - 2) + 2));
-                }
-                this.#population.snakes[i].think();
-                this.#population.snakes[i].drawDist();
+            if (this.#population.snakes[i].isDead()){
+                 this.#population.removeSnake(i);
+                 break;
+            }        
+            if (JSON.stringify(this.#population.snakes[i].getBody()[0]) === JSON.stringify(this.#population.snakes[i].fruit.getPos())) {
+                this.#population.snakes[i].grow();
+                this.#population.snakes[i].fruit.setPos(Math.floor(Math.random() * (this.getWidth() - 2) + 2), Math.floor(Math.random() * (this.getHeight() - 2) + 2));
             }
             this.#population.snakes[i].display();
-            if (this.#population.snakes[i].isDead()) this.#population.removeSnake(i);
+            this.#population.snakes[i].drawDist();
+
+            this.#population.snakes[i].think();     
+            this.#population.snakes[i].checkCollision();
         }
 
         if(this.#population.snakes.length == 0){
             this.#population = this.#population.nextGeneration();
+            this.#generation++;
         }
     }
 

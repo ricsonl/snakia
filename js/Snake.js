@@ -27,7 +27,7 @@ class Snake {
 
     fruit = undefined;
 
-    constructor(x, y, c, p){
+    constructor(c, p){
         this.#dir = 'U';
         this.#lastScores = [0,];
         this.#lastMoves = ['ahead'];
@@ -38,10 +38,12 @@ class Snake {
 
         this.#population = p;
 
+        const x = Math.floor(this.#population.game.getWidth() / 2);
+        const y =Math.floor(this.#population.game.getHeight() * (7 / 8));
         this.#body = [
                         { x: x*p.game.getPixel(), y: y*p.game.getPixel() }, 
                         { x: x*p.game.getPixel(), y: (y+1)*p.game.getPixel() }, 
-                        { x: x*p.game.getPixel(), y: (y+2)*p.game.getPixel() },
+                        /*{ x: x*p.game.getPixel(), y: (y+2)*p.game.getPixel() },*/
                     ];
 
         const head = this.#body[0];
@@ -56,7 +58,7 @@ class Snake {
         }
 
         this.#color = c;
-        this.fruit = new Fruit(Math.floor(Math.random() * (this.#population.game.getWidth() - 2) + 2), Math.floor(Math.random() * (this.#population.game.getHeight() - 2) + 2), c, this.#population.game);
+        this.fruit = new Fruit(c, this.#population.game);
     
         this.#targets = {
             'food': this.fruit.getPos(),
@@ -113,7 +115,7 @@ class Snake {
         const body = this.getBody();
 
         let prev = body[0];
-        for(let i=1; i<body.length; i++){
+        for(let i=0; i<body.length; i++){
             const curr = body[i];
             if ((curr.x != prev.x && curr.y != prev.y)){
                 line(prev.x, prev.y, body[i-1].x, body[i-1].y);
@@ -128,74 +130,71 @@ class Snake {
     }
 
     walk(dir) {
+        this.#body.unshift(this.#points[dir]);
+        this.#body.pop();
+
         const head = this.#body[0];
         const pixel = this.#population.game.getPixel();
         const width = this.#population.game.getWidth();
         const height = this.#population.game.getHeight();
         this.#targets['tail'] = this.#body[this.#body.length - 1];
         this.#targets['food'] = this.fruit.getPos();
-
+        
         switch(this.#dir){
+            case 'U':
+                this.#dir = (dir == 'right') ? 'R' : ((dir == 'left') ? 'L' : 'U');
+                break;
+            case 'R':
+                this.#dir = (dir == 'right') ? 'D' : ((dir == 'left') ? 'U' : 'R');
+                break;
+            case 'D':
+                this.#dir = (dir == 'right') ? 'L' : ((dir == 'left') ? 'R' : 'D');
+                break;
+            case 'L':
+                this.#dir = (dir == 'right') ? 'U' : ((dir == 'left') ? 'D' : 'L');
+                break;
+        }
+
+        switch (this.#dir) {
             case 'U':
                 this.#points['ahead'] = { x: head.x, y: head.y - pixel };
                 this.#points['right'] = { x: head.x + pixel, y: head.y };
                 this.#points['left'] = { x: head.x - pixel, y: head.y };
-
                 this.#targets['aWall'] = { x: head.x, y: 0 };
                 this.#targets['rWall'] = { x: width * pixel, y: head.y };
                 this.#targets['lWall'] = { x: 0, y: head.y };
-
-                this.#body.pop();
-                this.#body.unshift(this.#points[dir]);
-                this.#dir = (dir == 'right') ? 'R' : ((dir == 'left') ? 'L' : 'U');
-
                 break;
+
             case 'R':
                 this.#points['ahead'] = { x: head.x + pixel, y: head.y };
                 this.#points['right'] = { x: head.x, y: head.y + pixel };
                 this.#points['left'] = { x: head.x, y: head.y - pixel };
-
                 this.#targets['aWall'] = { x: width * pixel, y: head.y };
                 this.#targets['rWall'] = { x: head.x, y: height * pixel };
                 this.#targets['lWall'] = { x: head.x, y: 0 };
-
-                this.#body.pop();
-                this.#body.unshift(this.#points[dir]);
-                this.#dir = (dir == 'right') ? 'D' : ((dir == 'left') ? 'U' : 'R');
-
                 break;
+
             case 'D':
                 this.#points['ahead'] = { x: head.x, y: head.y + pixel };
                 this.#points['right'] = { x: head.x - pixel, y: head.y };
                 this.#points['left'] = { x: head.x + pixel, y: head.y };
-
                 this.#targets['aWall'] = { x: head.x, y: height * pixel };
                 this.#targets['rWall'] = { x: 0, y: head.y };
                 this.#targets['lWall'] = { x: width * pixel, y: head.y };
-
-                this.#body.pop();
-                this.#body.unshift(this.#points[dir]);
-                this.#dir = (dir == 'right') ? 'L' : ((dir == 'left') ? 'R' : 'D');
-
                 break;
+
             case 'L':
                 this.#points['ahead'] = { x: head.x - pixel, y: head.y };
                 this.#points['right'] = { x: head.x, y: head.y - pixel };
                 this.#points['left'] = { x: head.x, y: head.y + pixel };
-
                 this.#targets['aWall'] = { x: 0, y: head.y };
                 this.#targets['rWall'] = { x: head.x, y: 0 };
                 this.#targets['lWall'] = { x: head.x, y: height * pixel };
-
-                this.#body.pop();
-                this.#body.unshift(this.#points[dir]);
-                this.#dir = (dir == 'right') ? 'U' : ((dir == 'left') ? 'D' : 'L');
-
                 break;
-        }
+    }
 
         this.#lastMoves.unshift(dir);
-        if (this.#lastMoves[0] != 'ahead' && this.#lastMoves.length >= 25) {
+        if (this.#lastMoves[0] != 'ahead' && this.#lastMoves.length >= 30) {
             this.#lastMoves.pop();
             if (this.#lastMoves.every((val, i, arr) => val === arr[0])) {
                 this.#dead = true;
@@ -235,14 +234,12 @@ class Snake {
         const _x = this.#body[0].x;
         const _y = this.#body[0].y;
 
-        for (let i = 1; i < this.#body.length - 1; i++) {
+        for (let i = 1; i < this.#body.length; i++) {
             let segm = this.#body[i];
             if (segm.x == _x && segm.y == _y){
                 this.#dead = true;
             }
         }
-
-        return this.#dead;
     }
 
     think(){

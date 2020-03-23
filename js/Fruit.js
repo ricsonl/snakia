@@ -4,8 +4,11 @@ class Fruit {
 
     #color = undefined;
 
-    constructor(x, y, c, g) {   
+    constructor(c, g) {   
         this.game = g;
+
+        const x = Math.floor(Math.random() * (this.game.getWidth() - 2) + 2);
+        const y = Math.floor(Math.random() * (this.game.getHeight() - 2) + 2);
         this.#pos = { x: x*g.getPixel(), y: y*g.getPixel() };
 
         this.#color = c;

@@ -18,7 +18,7 @@ class Population {
             this.snakes = [];
             for (let i = 0; i < this.#size; i++) {
                 const randColor = color("hsl(" + Math.round(360 * i / this.#size) + ",80%,50%)");
-                this.snakes.push(new Snake(Math.floor(this.game.getWidth() / 2), Math.floor(this.game.getHeight() * (7 / 8)), randColor, this));
+                this.snakes.push(new Snake(randColor, this));
             }
             this.#backup = [];
         }
@@ -42,18 +42,18 @@ class Population {
         });
     }
 
-    calculateFinalScore(i) {
+    calculateSnakeFinalScore(i) {
         return (this.#backup[i]['score'] + (this.#backup[i]['distScore']) /1+(this.#backup[i]['score']));
     }
 
     calculateFitness() {
         let sum = 0;
         for (let i = 0; i < this.#backup.length; i++) {
-            sum += this.calculateFinalScore(i);
+            sum += this.calculateSnakeFinalScore(i);
         }
         //console.log(sum);
         for (let i = 0; i < this.#backup.length; i++) {
-            this.#backup[i]['fitness'] = this.calculateFinalScore(i) / sum;
+            this.#backup[i]['fitness'] = this.calculateSnakeFinalScore(i) / sum;
         }
     }
 
@@ -67,7 +67,7 @@ class Population {
         index--;
         const childBrain = this.#backup[index]['brain'];
         const childColor = this.#backup[index]['color'];
-        let child = new Snake(Math.floor(this.game.getWidth() / 2), Math.floor(this.game.getHeight() * (7 / 8)), childColor, this);
+        let child = new Snake(childColor, this);
         child.setBrain(childBrain);
         child.mutate();
         return child;
