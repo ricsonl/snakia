@@ -65,13 +65,13 @@ class Game {
         this.display(dists);
     }
 
-    display(dists=false) {
+    display(lines=false) {
         clear();
         background(this.getColor());
         for (let i = 0; i < this.#population.snakes.length; i++){
             this.#population.snakes[i].display();
-            if(dists)
-                this.#population.snakes[i].drawDist();
+            if(lines)
+                this.#population.snakes[i].drawLines();
         }
     }
 

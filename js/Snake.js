@@ -20,11 +20,8 @@ class Snake {
     population = undefined;
 
     #body = undefined;
-    #points = undefined;
-    #targets = undefined;
 
     #color = undefined;
-
     #fruit = undefined;
 
     constructor(c, p){
@@ -40,17 +37,14 @@ class Snake {
             this.population = c.population;
 
             this.#body = c.getBody();
-            this.#points = c.getPoints();
-            this.#targets = c.getTargets();
 
             this.#color = c.getColor();
-
             this.#fruit = new Fruit(c, p.game);
         } else {
             this.#dir = 'U';
             this.#lastScores = [0,];
             this.#lastMoves = ['ahead'];
-            this.#brain = new NeuralNetwork(9, 6, 3);
+            this.#brain = new NeuralNetwork(6, 5, 3);
 
             this.#score = 0;
             this.#dead = false;
@@ -65,28 +59,9 @@ class Snake {
                 /*{ x: x*p.game.getPixel(), y: (y+2)*p.game.getPixel() },*/
             ];
 
-            const head = this.#body[0];
-            const pixel = p.game.getPixel();
-            const width = p.game.getWidth();
-            const height = p.game.getHeight();
-
-            this.#points = {
-                'ahead': { x: head.x, y: head.y - pixel },
-                'right': { x: head.x + pixel, y: head.y },
-                'left': { x: head.x - pixel, y: head.y },
-            }
-
             this.#color = c;
             this.#fruit = new Fruit(c, this.population.game);
 
-            this.#targets = {
-                'food': this.#fruit.getPos(),
-                'tail': this.#body[this.#body.length - 1],
-                'aWall': { x: head.x, y: 0 },
-                'rWall': { x: width * pixel, y: head.y },
-                'lWall': { x: 0, y: head.y },
-            }
-            this.think();
         }
     }
 
@@ -111,12 +86,6 @@ class Snake {
     getBody(){ 
         return this.#body.slice();
     }
-    getPoints(){
-        return Object.assign({}, this.#points);
-    }
-    getTargets(){
-        return Object.assign({}, this.#targets);
-    }
     getColor(){
         return color(this.#color);
     }
@@ -136,18 +105,39 @@ class Snake {
         this.#fruit.setPos(x, y);
     }
 
-    drawDist(){
-        strokeWeight(0.5);
+    drawLines(){
+        const head = this.#body[0];
+        const pixel = this.population.game.getPixel();
+        const width = this.population.game.getWidth();
+        const height = this.population.game.getHeight();
+
+        strokeWeight(0.6);
         stroke(this.#color);
-        Object.entries(this.#targets).map((t) =>{
-            Object.entries(this.#points).map((d) => {
-                if (
-                    (t[0] == 'aWall' && (d[0] == 'right' || d[0] == 'left')) ||
-                    (t[0] == 'rWall' && (d[0] == 'ahead' || d[0] == 'left')) ||
-                    (t[0] == 'lWall' && (d[0] == 'ahead' || d[0] == 'right'))
-                ){} else line(t[1].x, t[1].y, d[1].x, d[1].y);
-            });
-        })
+        switch(this.#dir){
+            case('U'):
+                line(head.x, head.y, head.x, 0);
+                line(head.x, head.y, width*pixel, head.y);
+                line(head.x, head.y, 0, head.y);
+                break;
+
+            case('R'):
+                line(head.x, head.y, width*pixel, head.y);
+                line(head.x, head.y, head.x, height*pixel);
+                line(head.x, head.y, head.x, 0);
+                break;
+
+            case('D'):
+                line(head.x, head.y, head.x, height*pixel);
+                line(head.x, head.y, 0, head.y);
+                line(head.x, head.y, width*pixel-1, head.y);
+                break;
+
+            case('L'):
+                line(head.x, head.y, 0, head.y);
+                line(head.x, head.y, head.x, 0);
+                line(head.x, head.y, head.x, height*pixel);
+                break;
+        }
     }
 
     display(){
@@ -171,68 +161,77 @@ class Snake {
     }
 
     walk(dir){
-        this.#body.unshift(this.#points[dir]);
         this.#body.pop();
 
-        const head = this.#body[0];
+        const x = this.#body[0].x
+        const y = this.#body[0].y
         const pixel = this.population.game.getPixel();
-        const width = this.population.game.getWidth();
-        const height = this.population.game.getHeight();
-        this.#targets['tail'] = this.#body[this.#body.length - 1];
-        this.#targets['food'] = this.#fruit.getPos();
-        
+
         switch(this.#dir){
             case 'U':
-                this.#dir = (dir == 'right') ? 'R' : ((dir == 'left') ? 'L' : 'U');
+                switch(dir){
+                    case 'ahead':
+                        this.#body.unshift({ x: x, y: y - pixel });
+                        break;
+                    case 'right':
+                        this.#body.unshift({ x: x + pixel, y: y });
+                        this.#dir = 'R';
+                        break;
+                    case 'left':
+                        this.#body.unshift({ x: x - pixel, y: y });
+                        this.#dir = 'L';
+                        break;
+                }
                 break;
+
             case 'R':
-                this.#dir = (dir == 'right') ? 'D' : ((dir == 'left') ? 'U' : 'R');
+                switch(dir){
+                    case 'ahead':
+                        this.#body.unshift({ x: x + pixel, y: y });
+                        break;
+                    case 'right':
+                        this.#body.unshift({ x: x, y: y + pixel });
+                        this.#dir = 'D';
+                        break;
+                    case 'left':
+                        this.#body.unshift({ x: x, y: y - pixel});
+                        this.#dir = 'U';
+                        break;
+                }
                 break;
+
             case 'D':
-                this.#dir = (dir == 'right') ? 'L' : ((dir == 'left') ? 'R' : 'D');
+                switch(dir){
+                    case 'ahead':
+                        this.#body.unshift({ x: x, y: y + pixel });
+                        break;
+                    case 'right':
+                        this.#body.unshift({ x: x - pixel, y: y });
+                        this.#dir = 'L';
+                        break;
+                    case 'left':
+                        this.#body.unshift({ x: x + pixel, y: y });
+                        this.#dir = 'R';
+                        break;
+                }
                 break;
+
             case 'L':
-                this.#dir = (dir == 'right') ? 'U' : ((dir == 'left') ? 'D' : 'L');
+                switch(dir){
+                    case 'ahead':
+                        this.#body.unshift({ x: x - pixel, y: y });
+                        break;
+                    case 'right':
+                        this.#body.unshift({ x: x, y: y - pixel });
+                        this.#dir = 'U';
+                        break;
+                    case 'left':
+                        this.#body.unshift({ x: x, y: y + pixel});
+                        this.#dir = 'D';
+                        break;
+                }
                 break;
         }
-
-        switch (this.#dir) {
-            case 'U':
-                this.#points['ahead'] = { x: head.x, y: head.y - pixel };
-                this.#points['right'] = { x: head.x + pixel, y: head.y };
-                this.#points['left'] = { x: head.x - pixel, y: head.y };
-                this.#targets['aWall'] = { x: head.x, y: 0 };
-                this.#targets['rWall'] = { x: width * pixel, y: head.y };
-                this.#targets['lWall'] = { x: 0, y: head.y };
-                break;
-
-            case 'R':
-                this.#points['ahead'] = { x: head.x + pixel, y: head.y };
-                this.#points['right'] = { x: head.x, y: head.y + pixel };
-                this.#points['left'] = { x: head.x, y: head.y - pixel };
-                this.#targets['aWall'] = { x: width * pixel, y: head.y };
-                this.#targets['rWall'] = { x: head.x, y: height * pixel };
-                this.#targets['lWall'] = { x: head.x, y: 0 };
-                break;
-
-            case 'D':
-                this.#points['ahead'] = { x: head.x, y: head.y + pixel };
-                this.#points['right'] = { x: head.x - pixel, y: head.y };
-                this.#points['left'] = { x: head.x + pixel, y: head.y };
-                this.#targets['aWall'] = { x: head.x, y: height * pixel };
-                this.#targets['rWall'] = { x: 0, y: head.y };
-                this.#targets['lWall'] = { x: width * pixel, y: head.y };
-                break;
-
-            case 'L':
-                this.#points['ahead'] = { x: head.x - pixel, y: head.y };
-                this.#points['right'] = { x: head.x, y: head.y - pixel };
-                this.#points['left'] = { x: head.x, y: head.y + pixel };
-                this.#targets['aWall'] = { x: 0, y: head.y };
-                this.#targets['rWall'] = { x: head.x, y: 0 };
-                this.#targets['lWall'] = { x: head.x, y: height * pixel };
-                break;
-    }
 
         this.#lastMoves.unshift(dir);
         if (this.#lastMoves[0] != 'ahead' && this.#lastMoves.length >= 30) {
@@ -244,7 +243,7 @@ class Snake {
 
         this.#lastScores.unshift(this.#score);
         if (this.#score > this.#lastScores[1])
-        this.#lastScores = [];
+            this.#lastScores = [];
         else if (this.#lastScores.length >= 350) {
             if (this.#lastScores.every((val, i, arr) => val === arr[0])) {
                 this.#dead = true;
@@ -283,22 +282,11 @@ class Snake {
     }
 
     think(){
-        let inputs = [];
+        let inputs = [0, 1, 1, 0, 1, 0];
         let pixel = this.population.game.getPixel();
 
-        Object.entries(this.#targets).map((t) => {
-            Object.entries(this.#points).map((d) => {
-                if (
-                    (t[0] == 'aWall' && (d[0] == 'right' || d[0] == 'left')) ||
-                    (t[0] == 'rWall' && (d[0] == 'ahead' || d[0] == 'left')) ||
-                    (t[0] == 'lWall' && (d[0] == 'ahead' || d[0] == 'right'))
-                ){} else {
-                    const c1 = (t[1].x - d[1].x) / pixel;
-                    const c2 = (t[1].y - d[1].y) / pixel;
-                    inputs.push(Math.sqrt( c1*c1 + c2*c2 ));
-                }
-            });
-        });
+        //
+
         let output = this.#brain.predict(inputs);
         console.log(inputs, output);
         switch (output.indexOf(Math.max(...output))){
