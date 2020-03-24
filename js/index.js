@@ -8,6 +8,6 @@ function draw(){
     game.evolve(slider.value(), true);
 }
 
-/*function keyPressed() {
+function keyPressed() {
     game.humanControl(keyCode);
-}*/
+}

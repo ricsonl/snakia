@@ -49,7 +49,6 @@ class Game {
                 //this.#population.snakes[i].think();
                 this.#population.snakes[i].checkCollision();
                 this.#population.checkBest(i);
-                console.log(this.#population.getBestScore());
             }
 
             for (let i = 0; i < this.#population.snakes.length; i++)
@@ -78,13 +77,18 @@ class Game {
     humanControl(key) {
         switch (key) {
             case 39:
-                this.#population.snakes[0].walk('right');
+                this.#population.snakes[0].walkRight();
                 break;
             case 37:
-                this.#population.snakes[0].walk('left');
+                this.#population.snakes[0].walkLeft();
                 break;
             default:
-                this.#population.snakes[0].walk('ahead');
+                this.#population.snakes[0].walkAhead();
         }
+        let le = this.#population.snakes[0].lookLeft();
+        let ah = this.#population.snakes[0].lookAhead();
+        let ri = this.#population.snakes[0].lookRight();
+
+        console.log(le, ah, ri);
     }
 }

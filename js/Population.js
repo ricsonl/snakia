@@ -67,7 +67,6 @@ class Population {
         this.#backup.push({
             'brain': deadSnake.getBrain(),
             'score': deadSnake.getScore(),
-            'distScore': deadSnake.calculateDistScore(),
             'fitness': undefined,
             'color': deadSnake.getColor()
         });

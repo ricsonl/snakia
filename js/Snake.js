@@ -61,7 +61,6 @@ class Snake {
 
             this.#color = c;
             this.#fruit = new Fruit(c, this.population.game);
-
         }
     }
 
@@ -97,47 +96,22 @@ class Snake {
         this.#brain = b;
     }
 
-    ate(){
-        return JSON.stringify(this.#body[0]) == JSON.stringify(this.#fruit.getPos());
-    }
-
     setFruitPos(x, y){
         this.#fruit.setPos(x, y);
     }
 
     drawLines(){
         const head = this.#body[0];
-        const pixel = this.population.game.getPixel();
-        const width = this.population.game.getWidth();
-        const height = this.population.game.getHeight();
 
+        const pointA = this.lookAhead()['point'];
+        const pointR = this.lookRight()['point'];
+        const pointL = this.lookLeft()['point'];
+        
         strokeWeight(0.6);
         stroke(this.#color);
-        switch(this.#dir){
-            case('U'):
-                line(head.x, head.y, head.x, 0);
-                line(head.x, head.y, width*pixel, head.y);
-                line(head.x, head.y, 0, head.y);
-                break;
-
-            case('R'):
-                line(head.x, head.y, width*pixel, head.y);
-                line(head.x, head.y, head.x, height*pixel);
-                line(head.x, head.y, head.x, 0);
-                break;
-
-            case('D'):
-                line(head.x, head.y, head.x, height*pixel);
-                line(head.x, head.y, 0, head.y);
-                line(head.x, head.y, width*pixel-1, head.y);
-                break;
-
-            case('L'):
-                line(head.x, head.y, 0, head.y);
-                line(head.x, head.y, head.x, 0);
-                line(head.x, head.y, head.x, height*pixel);
-                break;
-        }
+        line(head.x, head.y, pointA.x, pointA.y);
+        line(head.x, head.y, pointR.x, pointR.y);
+        line(head.x, head.y, pointL.x, pointL.y);
     }
 
     display(){
@@ -160,95 +134,258 @@ class Snake {
         this.#fruit.display();
     }
 
-    walk(dir){
-        this.#body.pop();
-
-        const x = this.#body[0].x
-        const y = this.#body[0].y
+    lookAhead(){
+        const head = this.#body[0];
         const pixel = this.population.game.getPixel();
-
+        const width = this.population.game.getWidth();
+        const height = this.population.game.getHeight();
+        let res = {
+            'point': undefined,
+            'dist': undefined,
+            'isFood': undefined,
+        }
         switch(this.#dir){
             case 'U':
-                switch(dir){
-                    case 'ahead':
-                        this.#body.unshift({ x: x, y: y - pixel });
-                        break;
-                    case 'right':
-                        this.#body.unshift({ x: x + pixel, y: y });
-                        this.#dir = 'R';
-                        break;
-                    case 'left':
-                        this.#body.unshift({ x: x - pixel, y: y });
-                        this.#dir = 'L';
-                        break;
+                if (head.x == this.#fruit.getPos().x && head.y > this.#fruit.getPos().y){
+                    res['isFood'] = 1;    
+                    res['point'] = this.#fruit.getPos();
+                } else {
+                    res['isFood'] = 0; 
+                    res['point'] = { x: head.x, y: 0 };
                 }
+                res['dist'] = Math.abs(res['point'].y - head.y) / (height*pixel);
                 break;
 
             case 'R':
-                switch(dir){
-                    case 'ahead':
-                        this.#body.unshift({ x: x + pixel, y: y });
-                        break;
-                    case 'right':
-                        this.#body.unshift({ x: x, y: y + pixel });
-                        this.#dir = 'D';
-                        break;
-                    case 'left':
-                        this.#body.unshift({ x: x, y: y - pixel});
-                        this.#dir = 'U';
-                        break;
+                if (head.y == this.#fruit.getPos().y && head.x < this.#fruit.getPos().x){
+                    res['isFood'] = 1;    
+                    res['point'] = this.#fruit.getPos();
+                } else {
+                    res['isFood'] = 0; 
+                    res['point'] = { x: width*pixel, y: head.y };
                 }
+                res['dist'] = Math.abs(res['point'].x - head.x) /(width*pixel);
                 break;
 
             case 'D':
-                switch(dir){
-                    case 'ahead':
-                        this.#body.unshift({ x: x, y: y + pixel });
-                        break;
-                    case 'right':
-                        this.#body.unshift({ x: x - pixel, y: y });
-                        this.#dir = 'L';
-                        break;
-                    case 'left':
-                        this.#body.unshift({ x: x + pixel, y: y });
-                        this.#dir = 'R';
-                        break;
+                if (head.x == this.#fruit.getPos().x && head.y < this.#fruit.getPos().y){
+                    res['isFood'] = 1;    
+                    res['point'] = this.#fruit.getPos();
+                } else {
+                    res['isFood'] = 0; 
+                    res['point'] = { x: head.x, y: height*pixel };
                 }
+                res['dist'] = Math.abs(res['point'].y - head.y) / (height*pixel);
                 break;
 
             case 'L':
-                switch(dir){
-                    case 'ahead':
-                        this.#body.unshift({ x: x - pixel, y: y });
-                        break;
-                    case 'right':
-                        this.#body.unshift({ x: x, y: y - pixel });
-                        this.#dir = 'U';
-                        break;
-                    case 'left':
-                        this.#body.unshift({ x: x, y: y + pixel});
-                        this.#dir = 'D';
-                        break;
+                if (head.y == this.#fruit.getPos().y && head.x > this.#fruit.getPos().x){
+                    res['isFood'] = 1;    
+                    res['point'] = this.#fruit.getPos();
+                } else {
+                    res['isFood'] = 0; 
+                    res['point'] = { x: 0, y: head.y };
                 }
+                res['dist'] = Math.abs(res['point'].x - head.x) /(width*pixel);
+                break;
+
+        }
+        
+        return res;
+    }
+    lookRight(){
+        const head = this.#body[0];
+        const pixel = this.population.game.getPixel();
+        const width = this.population.game.getWidth();
+        const height = this.population.game.getHeight();
+        let res = {
+            'point': undefined,
+            'dist': undefined,
+            'isFood': undefined,
+        }
+        switch(this.#dir){
+            case 'U':
+                if (head.y == this.#fruit.getPos().y && head.x < this.#fruit.getPos().x){
+                    res['isFood'] = 1;    
+                    res['point'] = this.#fruit.getPos();
+                } else {
+                    res['isFood'] = 0; 
+                    res['point'] = { x: width*pixel, y: head.y };
+                }
+                res['dist'] = Math.abs(res['point'].x - head.x) / (width*pixel);
+                break;
+
+            case 'R':
+                if (head.x == this.#fruit.getPos().x && head.y < this.#fruit.getPos().y){
+                    res['isFood'] = 1;    
+                    res['point'] = this.#fruit.getPos();
+                } else {
+                    res['isFood'] = 0; 
+                    res['point'] = { x: head.x, y: height*pixel };
+                }
+                res['dist'] = Math.abs(res['point'].y - head.y) /(height*pixel);
+                break;
+
+            case 'D':
+                if (head.y == this.#fruit.getPos().y && head.x > this.#fruit.getPos().x){
+                    res['isFood'] = 1;    
+                    res['point'] = this.#fruit.getPos();
+                } else {
+                    res['isFood'] = 0; 
+                    res['point'] = { x: 0, y: head.y };
+                }
+                res['dist'] = Math.abs(res['point'].x - head.x) / (width*pixel);
+                break;
+
+            case 'L':
+                if (head.x == this.#fruit.getPos().x && head.y > this.#fruit.getPos().y){
+                    res['isFood'] = 1;    
+                    res['point'] = this.#fruit.getPos();
+                } else {
+                    res['isFood'] = 0; 
+                    res['point'] = { x: head.x, y: 0 };
+                }
+                res['dist'] = Math.abs(res['point'].y - head.y) /(height*pixel);
+                break;
+
+        }
+        
+        return res;
+    }
+    lookLeft(){
+        const head = this.#body[0];
+        const pixel = this.population.game.getPixel();
+        const width = this.population.game.getWidth();
+        const height = this.population.game.getHeight();
+        let res = {
+            'point': undefined,
+            'dist': undefined,
+            'isFood': undefined,
+        }
+        switch(this.#dir){
+            case 'U':
+                if (head.y == this.#fruit.getPos().y && head.x > this.#fruit.getPos().x){
+                    res['isFood'] = 1;    
+                    res['point'] = this.#fruit.getPos();
+                } else {
+                    res['isFood'] = 0; 
+                    res['point'] = { x: 0, y: head.y };
+                }
+                res['dist'] = Math.abs(res['point'].x - head.x) / (width*pixel);
+                break;
+
+            case 'R':
+                if (head.x == this.#fruit.getPos().x && head.y > this.#fruit.getPos().y){
+                    res['isFood'] = 1;    
+                    res['point'] = this.#fruit.getPos();
+                } else {
+                    res['isFood'] = 0; 
+                    res['point'] = { x: head.x, y: 0 };
+                }
+                res['dist'] = Math.abs(res['point'].y - head.y) /(height*pixel);
+                break;
+
+            case 'D':
+                if (head.y == this.#fruit.getPos().y && head.x < this.#fruit.getPos().x){
+                    res['isFood'] = 1;    
+                    res['point'] = this.#fruit.getPos();
+                } else {
+                    res['isFood'] = 0; 
+                    res['point'] = { x: width*pixel, y: head.y };
+                }
+                res['dist'] = Math.abs(res['point'].x - head.x) / (width*pixel);
+                break;
+
+            case 'L':
+                if (head.x == this.#fruit.getPos().x && head.y < this.#fruit.getPos().y){
+                    res['isFood'] = 1;    
+                    res['point'] = this.#fruit.getPos();
+                } else {
+                    res['isFood'] = 0; 
+                    res['point'] = { x: head.x, y: height*pixel };
+                }
+                res['dist'] = Math.abs(res['point'].y - head.y) /(height*pixel);
+                break;
+
+        }
+        
+        return res;
+    }
+
+    walkAhead(){
+        this.#body.pop();
+
+        const x = this.#body[0].x;            
+        const y = this.#body[0].y;            
+        const pixel = this.population.game.getPixel();
+        switch(this.#dir){
+            case 'U':
+                this.#body.unshift({ x: x, y: y - pixel });
+                break;
+            case 'R':
+                this.#body.unshift({ x: x + pixel, y: y });
+                break;
+            case 'D':
+                this.#body.unshift({ x: x, y: y + pixel });
+                break;
+            case 'L':
+                this.#body.unshift({ x: x - pixel, y: y });
                 break;
         }
+    }
+    walkRight(){
+        this.#body.pop();
 
-        this.#lastMoves.unshift(dir);
-        if (this.#lastMoves[0] != 'ahead' && this.#lastMoves.length >= 30) {
-            this.#lastMoves.pop();
-            if (this.#lastMoves.every((val, i, arr) => val === arr[0])) {
-                this.#dead = true;
-            }
+        const x = this.#body[0].x;        
+        const y = this.#body[0].y;        
+        const pixel = this.population.game.getPixel();
+        switch(this.#dir){
+            case 'U':
+                this.#body.unshift({ x: x + pixel, y: y });
+                this.#dir = 'R';
+                break;
+            case 'R':
+                this.#body.unshift({ x: x, y: y + pixel });
+                this.#dir = 'D';
+                break;
+            case 'D':
+                this.#body.unshift({ x: x - pixel, y: y });
+                this.#dir = 'L';
+                break;
+            case 'L':
+                this.#body.unshift({ x: x, y: y - pixel });
+                this.#dir = 'U';
+                break;
         }
+    }
+    walkLeft(){
+        this.#body.pop();
 
-        this.#lastScores.unshift(this.#score);
-        if (this.#score > this.#lastScores[1])
-            this.#lastScores = [];
-        else if (this.#lastScores.length >= 350) {
-            if (this.#lastScores.every((val, i, arr) => val === arr[0])) {
-                this.#dead = true;
-            }
+        const x = this.#body[0].x;    
+        const y = this.#body[0].y;    
+        const pixel = this.population.game.getPixel();
+        switch(this.#dir){
+            case 'U':
+                this.#body.unshift({ x: x - pixel, y: y });
+                this.#dir = 'L';
+                break;
+            case 'R':
+                this.#body.unshift({ x: x, y: y - pixel});
+                this.#dir = 'U';
+                break;
+            case 'D':
+                this.#body.unshift({ x: x + pixel, y: y });
+                this.#dir = 'R';
+                break;
+            case 'L':
+                this.#body.unshift({ x: x, y: y + pixel });
+                this.#dir = 'D';
+                break;
         }
+    }
+
+    ate(){
+        return JSON.stringify(this.#body[0]) == JSON.stringify(this.#fruit.getPos());
     }
 
     grow() {
@@ -281,35 +418,29 @@ class Snake {
         }
     }
 
-    think(){
+    think(){    
         let inputs = [0, 1, 1, 0, 1, 0];
-        let pixel = this.population.game.getPixel();
 
+        /*let ah = this.lookAhead();
+        let ri = this.lookRight();
+        let le = this.lookLeft();
+
+        console.log(ah, ri, le);*/
         //
 
-        let output = this.#brain.predict(inputs);
-        console.log(inputs, output);
+        const output = this.#brain.predict(inputs);
+        //console.log(inputs, output);
         switch (output.indexOf(Math.max(...output))){
             case 0:
-                this.walk('left');
+                this.walkLeft();
                 break;
             case 1:
-                this.walk('ahead');
+                this.walkAhead();
                 break;
             case 2:
-                this.walk('right');
+                this.walkRight();
                 break;
         }
-    }
-
-    calculateDistScore() {
-        const c1 = this.#body[0].x - this.#fruit.getPos().x;
-        const c2 = this.#body[0].y - this.#fruit.getPos().y;
-        const diag = Math.sqrt(this.population.game.getHeight() * this.population.game.getHeight() + this.population.game.getWidth() * this.population.game.getWidth());
-        
-        const distToFood = Math.sqrt(c1 * c1 + c2 * c2) / this.population.game.getPixel();
-
-        return (diag - distToFood);
     }
 
     mutate() {
