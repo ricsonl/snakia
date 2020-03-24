@@ -24,6 +24,8 @@ class Snake {
     #color = undefined;
     #fruit = undefined;
 
+    #obstacles = undefined;
+
     constructor(c, p){
         if(c instanceof Snake){
             this.#dir = c.getDir();
@@ -40,6 +42,8 @@ class Snake {
 
             this.#color = c.getColor();
             this.#fruit = new Fruit(c, p.game);
+
+            this.#obstacles = c.getObstacles();
         } else {
             this.#dir = 'U';
             this.#lastScores = [0,];
@@ -61,6 +65,8 @@ class Snake {
 
             this.#color = c;
             this.#fruit = new Fruit(c, this.population.game);
+
+            this.calculateObstacles();
         }
     }
 
@@ -91,6 +97,9 @@ class Snake {
     getFruit(){
         return new Fruit(this.#fruit);
     }
+    getObstacles() {
+        return this.#obstacles.slice();
+    }
 
     setBrain(b){
         this.#brain = b;
@@ -112,6 +121,12 @@ class Snake {
         line(head.x, head.y, pointA.x, pointA.y);
         line(head.x, head.y, pointR.x, pointR.y);
         line(head.x, head.y, pointL.x, pointL.y);
+
+        strokeWeight(5);
+        stroke(color(0, 100, 255));
+        for (let i = 0; i < this.#obstacles.length; i++) {
+            line(this.#obstacles[i].x, this.#obstacles[i].y, this.#obstacles[i].x, this.#obstacles[i].y);
+        }
     }
 
     display(){
@@ -134,6 +149,27 @@ class Snake {
         this.#fruit.display();
     }
 
+    calculateObstacles(){
+        const pixel = this.population.game.getPixel();
+        const width = this.population.game.getWidth();
+        const height = this.population.game.getHeight();
+
+        this.#obstacles = [];
+        this.#obstacles.push(this.#fruit.getPos());
+
+        for(let h = 0; h < height; h++){
+            this.#obstacles.push({ x: 0, y: h*pixel});
+            this.#obstacles.push({ x: width*pixel, y: h*pixel});
+        }
+        for(let w = 0; w < width; w++){
+            this.#obstacles.push({ x: w*pixel, y: 0});
+            this.#obstacles.push({ x: w*pixel, y: height*pixel});
+        }
+        for(let b = 1; b < this.#body.length; b++){
+            this.#obstacles.push(this.#body[b]);
+        }
+    }
+
     lookAhead(){
         const head = this.#body[0];
         const pixel = this.population.game.getPixel();
@@ -152,6 +188,9 @@ class Snake {
                 } else {
                     res['isFood'] = 0; 
                     res['point'] = { x: head.x, y: 0 };
+                    for(let i = 0; i < this.#body.length; i++){
+
+                    }
                 }
                 res['dist'] = Math.abs(res['point'].y - head.y) / (height*pixel);
                 break;
@@ -163,6 +202,9 @@ class Snake {
                 } else {
                     res['isFood'] = 0; 
                     res['point'] = { x: width*pixel, y: head.y };
+                    for(let i = 0; i < this.#body.length; i++){
+
+                    }
                 }
                 res['dist'] = Math.abs(res['point'].x - head.x) /(width*pixel);
                 break;
@@ -174,6 +216,9 @@ class Snake {
                 } else {
                     res['isFood'] = 0; 
                     res['point'] = { x: head.x, y: height*pixel };
+                    for(let i = 0; i < this.#body.length; i++){
+
+                    }
                 }
                 res['dist'] = Math.abs(res['point'].y - head.y) / (height*pixel);
                 break;
@@ -185,6 +230,9 @@ class Snake {
                 } else {
                     res['isFood'] = 0; 
                     res['point'] = { x: 0, y: head.y };
+                    for(let i = 0; i < this.#body.length; i++){
+
+                    }
                 }
                 res['dist'] = Math.abs(res['point'].x - head.x) /(width*pixel);
                 break;
@@ -211,6 +259,9 @@ class Snake {
                 } else {
                     res['isFood'] = 0; 
                     res['point'] = { x: width*pixel, y: head.y };
+                    for(let i = 0; i < this.#body.length; i++){
+
+                    }
                 }
                 res['dist'] = Math.abs(res['point'].x - head.x) / (width*pixel);
                 break;
@@ -222,6 +273,9 @@ class Snake {
                 } else {
                     res['isFood'] = 0; 
                     res['point'] = { x: head.x, y: height*pixel };
+                    for(let i = 0; i < this.#body.length; i++){
+
+                    }
                 }
                 res['dist'] = Math.abs(res['point'].y - head.y) /(height*pixel);
                 break;
@@ -233,6 +287,9 @@ class Snake {
                 } else {
                     res['isFood'] = 0; 
                     res['point'] = { x: 0, y: head.y };
+                    for(let i = 0; i < this.#body.length; i++){
+
+                    }
                 }
                 res['dist'] = Math.abs(res['point'].x - head.x) / (width*pixel);
                 break;
@@ -244,6 +301,9 @@ class Snake {
                 } else {
                     res['isFood'] = 0; 
                     res['point'] = { x: head.x, y: 0 };
+                    for(let i = 0; i < this.#body.length; i++){
+
+                    }
                 }
                 res['dist'] = Math.abs(res['point'].y - head.y) /(height*pixel);
                 break;
@@ -271,7 +331,7 @@ class Snake {
                     res['isFood'] = 0; 
                     res['point'] = { x: 0, y: head.y };
                 }
-                res['dist'] = Math.abs(res['point'].x - head.x) / (width*pixel);
+                res['dist'] = Math.abs(res['point'].y - head.y) / (height*pixel);
                 break;
 
             case 'R':
@@ -282,7 +342,7 @@ class Snake {
                     res['isFood'] = 0; 
                     res['point'] = { x: head.x, y: 0 };
                 }
-                res['dist'] = Math.abs(res['point'].y - head.y) /(height*pixel);
+                res['dist'] = Math.abs(res['point'].x - head.x) /(width*pixel);
                 break;
 
             case 'D':
@@ -293,7 +353,7 @@ class Snake {
                     res['isFood'] = 0; 
                     res['point'] = { x: width*pixel, y: head.y };
                 }
-                res['dist'] = Math.abs(res['point'].x - head.x) / (width*pixel);
+                res['dist'] = Math.abs(res['point'].y - head.y) / (height*pixel);
                 break;
 
             case 'L':
@@ -304,7 +364,7 @@ class Snake {
                     res['isFood'] = 0; 
                     res['point'] = { x: head.x, y: height*pixel };
                 }
-                res['dist'] = Math.abs(res['point'].y - head.y) /(height*pixel);
+                res['dist'] = Math.abs(res['point'].x - head.x) /(width*pixel);
                 break;
 
         }
@@ -332,6 +392,7 @@ class Snake {
                 this.#body.unshift({ x: x - pixel, y: y });
                 break;
         }
+        this.calculateObstacles();
     }
     walkRight(){
         this.#body.pop();
@@ -357,6 +418,7 @@ class Snake {
                 this.#dir = 'U';
                 break;
         }
+        this.calculateObstacles();
     }
     walkLeft(){
         this.#body.pop();
@@ -382,6 +444,7 @@ class Snake {
                 this.#dir = 'D';
                 break;
         }
+        this.calculateObstacles();
     }
 
     ate(){
