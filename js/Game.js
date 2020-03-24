@@ -8,19 +8,19 @@ class Game {
     #population = undefined;
     #generation = undefined;
 
-    constructor(s, f){
+    constructor(s){
         this.#pixel = 15;
 
         this.#height = (windowHeight - 40) / this.#pixel;
         this.#width = (windowWidth - 250) / this.#pixel;
 
-        this.#color = color(15, 15, 15);
+        this.#color = color(0, 0, 0);
 
         this.#population = new Population(s, this);
         this.#generation = 1;
 
         createCanvas(this.#width * this.#pixel, this.#height * this.#pixel);
-        frameRate(f);
+        frameRate(8);
     }
     
     getPixel(){
@@ -39,29 +39,37 @@ class Game {
         return this.#generation.valueOf();
     }
 
-    display() {
+    evolve(cycles, dists){
+        for (let c = 0; c < cycles; c++) {
+            for (let i = 0; i < this.#population.snakes.length; i++) {
+                if (JSON.stringify(this.#population.snakes[i].getBody()[0]) === JSON.stringify(this.#population.snakes[i].fruit.getPos())) {
+                    this.#population.snakes[i].grow();
+                    this.#population.snakes[i].fruit.setPos(Math.floor(Math.random() * (this.getWidth() - 2) + 2), Math.floor(Math.random() * (this.getHeight() - 2) + 2));
+                }
+                this.#population.snakes[i].think();
+                this.#population.snakes[i].checkCollision();
+            }
+
+            for (let i = 0; i < this.#population.snakes.length; i++)
+                if (this.#population.snakes[i].isDead())
+                    this.#population.removeSnake(i);
+
+            if (this.#population.snakes.length == 0) {
+                this.#population = this.#population.nextGeneration();
+                this.#generation++;
+                break;
+            }
+        }
+        this.display(dists);
+    }
+
+    display(dists=false) {
         clear();
         background(this.getColor());
-
-        for(let i=0; i<this.#population.snakes.length; i++){
-            if (this.#population.snakes[i].isDead()){
-                 this.#population.removeSnake(i);
-                 break;
-            }        
-            if (JSON.stringify(this.#population.snakes[i].getBody()[0]) === JSON.stringify(this.#population.snakes[i].fruit.getPos())) {
-                this.#population.snakes[i].grow();
-                this.#population.snakes[i].fruit.setPos(Math.floor(Math.random() * (this.getWidth() - 2) + 2), Math.floor(Math.random() * (this.getHeight() - 2) + 2));
-            }
+        for (let i = 0; i < this.#population.snakes.length; i++){
             this.#population.snakes[i].display();
-            this.#population.snakes[i].drawDist();
-
-            this.#population.snakes[i].think();     
-            this.#population.snakes[i].checkCollision();
-        }
-
-        if(this.#population.snakes.length == 0){
-            this.#population = this.#population.nextGeneration();
-            this.#generation++;
+            if(dists)
+                this.#population.snakes[i].drawDist();
         }
     }
 

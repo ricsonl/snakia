@@ -1,15 +1,11 @@
 
 function setup(){
-    game = new Game(2, 10);
+    game = new Game(350);
+    slider = createSlider(1, 100, 1);
 }
 
 function draw(){
-    game.display();
-    displayStats();
-}
-
-function displayStats(){
-
+    game.evolve(slider.value());
 }
 
 /*function keyPressed() {

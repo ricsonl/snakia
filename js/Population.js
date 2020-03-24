@@ -6,12 +6,15 @@ class Population {
     #size = undefined;
     #backup = undefined;
 
+    #fitness = undefined;
+
     constructor(s, g) {
         if (s instanceof Population){
             this.game = s.game;
             this.#size = s.getSize();
-            this.snakes = s.snakes;
+            this.snakes = s.snakes.slice();
             this.#backup = s.getBackup();
+            this.#fitness = s.getFitness();
         } else {
             this.game = g;
             this.#size = s;
@@ -21,6 +24,7 @@ class Population {
                 this.snakes.push(new Snake(randColor, this));
             }
             this.#backup = [];
+            this.#fitness = 0;
         }
     }
 
@@ -29,6 +33,9 @@ class Population {
     }
     getBackup(){
         return JSON.parse(JSON.stringify(this.#backup));
+    }
+    getFitness(){
+        return this.#fitness.valueOf();
     }
 
     removeSnake(i) {
@@ -43,17 +50,22 @@ class Population {
     }
 
     calculateSnakeFinalScore(i) {
-        return (this.#backup[i]['score'] + (this.#backup[i]['distScore']) /1+(this.#backup[i]['score']));
+        return this.#backup[i]['score'];
     }
 
     calculateFitness() {
+        for (let i = 0; i < this.#backup.length; i++) {
+            this.#backup[i]['score'] = Math.pow(this.#backup[i]['score'], 2);
+        }
+
         let sum = 0;
         for (let i = 0; i < this.#backup.length; i++) {
             sum += this.calculateSnakeFinalScore(i);
         }
-        //console.log(sum);
+        this.#fitness = sum;
+
         for (let i = 0; i < this.#backup.length; i++) {
-            this.#backup[i]['fitness'] = this.calculateSnakeFinalScore(i) / sum;
+            this.#backup[i]['fitness'] = this.calculateSnakeFinalScore(i) / this.#fitness;
         }
     }
 
@@ -61,10 +73,11 @@ class Population {
         let index = 0;
         let r = random(1);
         while (r > 0) {
-            r = r - this.#backup[index]['fitness'];
+            r -= this.#backup[index]['fitness'];
             index++;
         }
         index--;
+
         const childBrain = this.#backup[index]['brain'];
         const childColor = this.#backup[index]['color'];
         let child = new Snake(childColor, this);
@@ -75,11 +88,11 @@ class Population {
 
     nextGeneration() {
         this.calculateFitness();
+        //console.log(this.#fitness, this.#backup);
         let next = new Population(this);
-        //console.log(next);
         for (let i = 0; i < this.#size; i++) {
-            const randColor = color("hsl(" + Math.round(360 * i / this.#size) + ",80%,50%)");
-            next.snakes.push(this.pickOne());
+            //const randColor = color("hsl(" + Math.round(360 * i / this.#size) + ",80%,50%)");
+            next.snakes[i] = this.pickOne();
         }
         next.#backup = [];
         return next;

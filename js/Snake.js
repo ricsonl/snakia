@@ -217,7 +217,6 @@ class Snake {
     }
 
     checkCollision() {
-        //console.log(this.#body);
         const pixel = this.#population.game.getPixel();
         const width = this.#population.game.getWidth();
         const height = this.#population.game.getHeight();
@@ -252,11 +251,7 @@ class Snake {
                     (t[0] == 'aWall' && (d[0] == 'right' || d[0] == 'left')) ||
                     (t[0] == 'rWall' && (d[0] == 'ahead' || d[0] == 'left')) ||
                     (t[0] == 'lWall' && (d[0] == 'ahead' || d[0] == 'right'))
-                ){} else if(t[0] == 'tail'){
-                    const c1 = (t[1].x - d[1].x) / pixel;
-                    const c2 = (t[1].y - d[1].y) / pixel;
-                    inputs.push(this.#score * Math.sqrt( c1*c1 + c2*c2 ));
-                } else {
+                ){} else {
                     const c1 = (t[1].x - d[1].x) / pixel;
                     const c2 = (t[1].y - d[1].y) / pixel;
                     inputs.push(Math.sqrt( c1*c1 + c2*c2 ));
