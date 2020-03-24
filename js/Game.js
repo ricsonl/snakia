@@ -9,10 +9,10 @@ class Game {
     #generation = undefined;
 
     constructor(s){
-        this.#pixel = 15;
+        this.#pixel = 20;
 
-        this.#height = (windowHeight - 40) / this.#pixel;
-        this.#width = (windowWidth - 250) / this.#pixel;
+        this.#height = (windowHeight*98/100) / this.#pixel;
+        this.#width = (windowWidth*4/5) / this.#pixel;
 
         this.#color = color(0, 0, 0);
 
@@ -42,12 +42,14 @@ class Game {
     evolve(cycles, dists){
         for (let c = 0; c < cycles; c++) {
             for (let i = 0; i < this.#population.snakes.length; i++) {
-                if (JSON.stringify(this.#population.snakes[i].getBody()[0]) === JSON.stringify(this.#population.snakes[i].fruit.getPos())) {
+                if (this.#population.snakes[i].ate()) {
                     this.#population.snakes[i].grow();
-                    this.#population.snakes[i].fruit.setPos(Math.floor(Math.random() * (this.getWidth() - 2) + 2), Math.floor(Math.random() * (this.getHeight() - 2) + 2));
+                    this.#population.snakes[i].setFruitPos(Math.floor(Math.random() * (this.getWidth() - 2) + 2), Math.floor(Math.random() * (this.getHeight() - 2) + 2));
                 }
-                this.#population.snakes[i].think();
+                //this.#population.snakes[i].think();
                 this.#population.snakes[i].checkCollision();
+                this.#population.checkBest(i);
+                console.log(this.#population.getBestScore());
             }
 
             for (let i = 0; i < this.#population.snakes.length; i++)

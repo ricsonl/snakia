@@ -17,7 +17,7 @@ class Snake {
     #dead = undefined;
     #score = undefined;
 
-    #population = undefined;
+    population = undefined;
 
     #body = undefined;
     #points = undefined;
@@ -25,74 +25,115 @@ class Snake {
 
     #color = undefined;
 
-    fruit = undefined;
+    #fruit = undefined;
 
     constructor(c, p){
-        this.#dir = 'U';
-        this.#lastScores = [0,];
-        this.#lastMoves = ['ahead'];
-        this.#brain = new NeuralNetwork(9, 6, 3);
+        if(c instanceof Snake){
+            this.#dir = c.getDir();
+            this.#lastScores = c.getLastScores();
+            this.#lastMoves = c.getLastMoves();
+            this.#brain = new NeuralNetwork(c.getBrain());
 
-        this.#score = 0;
-        this.#dead = false;
+            this.#dead = c.isDead();
+            this.#score = c.getScore();
 
-        this.#population = p;
+            this.population = c.population;
 
-        const x = Math.floor(this.#population.game.getWidth() / 2);
-        const y =Math.floor(this.#population.game.getHeight() * (7 / 8));
-        this.#body = [
-                        { x: x*p.game.getPixel(), y: y*p.game.getPixel() }, 
-                        { x: x*p.game.getPixel(), y: (y+1)*p.game.getPixel() }, 
-                        /*{ x: x*p.game.getPixel(), y: (y+2)*p.game.getPixel() },*/
-                    ];
+            this.#body = c.getBody();
+            this.#points = c.getPoints();
+            this.#targets = c.getTargets();
 
-        const head = this.#body[0];
-        const pixel = p.game.getPixel();
-        const width = p.game.getWidth();
-        const height = p.game.getHeight();
+            this.#color = c.getColor();
 
-        this.#points = {
-            'ahead': { x: head.x, y: head.y - pixel },
-            'right': { x: head.x + pixel, y: head.y },
-            'left': { x: head.x - pixel, y: head.y },
+            this.#fruit = new Fruit(c, p.game);
+        } else {
+            this.#dir = 'U';
+            this.#lastScores = [0,];
+            this.#lastMoves = ['ahead'];
+            this.#brain = new NeuralNetwork(9, 6, 3);
+
+            this.#score = 0;
+            this.#dead = false;
+
+            this.population = p;
+
+            const x = Math.floor(this.population.game.getWidth() / 2);
+            const y = Math.floor(this.population.game.getHeight() * (7 / 8));
+            this.#body = [
+                { x: x * p.game.getPixel(), y: y * p.game.getPixel() },
+                { x: x * p.game.getPixel(), y: (y + 1) * p.game.getPixel() },
+                /*{ x: x*p.game.getPixel(), y: (y+2)*p.game.getPixel() },*/
+            ];
+
+            const head = this.#body[0];
+            const pixel = p.game.getPixel();
+            const width = p.game.getWidth();
+            const height = p.game.getHeight();
+
+            this.#points = {
+                'ahead': { x: head.x, y: head.y - pixel },
+                'right': { x: head.x + pixel, y: head.y },
+                'left': { x: head.x - pixel, y: head.y },
+            }
+
+            this.#color = c;
+            this.#fruit = new Fruit(c, this.population.game);
+
+            this.#targets = {
+                'food': this.#fruit.getPos(),
+                'tail': this.#body[this.#body.length - 1],
+                'aWall': { x: head.x, y: 0 },
+                'rWall': { x: width * pixel, y: head.y },
+                'lWall': { x: 0, y: head.y },
+            }
+            this.think();
         }
-
-        this.#color = c;
-        this.fruit = new Fruit(c, this.#population.game);
-    
-        this.#targets = {
-            'food': this.fruit.getPos(),
-            'tail': this.#body[this.#body.length - 1],
-            'aWall': { x: head.x, y: 0 },
-            'rWall': { x: width * pixel, y: head.y },
-            'lWall': { x: 0, y: head.y },
-        }
     }
 
-    isDead(){
-        return (this.#dead ? true:false);
-    }
-
-   
-    getBody(){ 
-        return this.#body.slice();
-    }
     getDir(){
         return this.#dir.valueOf();
     }
-    getColor(){
-        return color(this.#color);
+    getLastScores(){
+        return this.#lastScores.slice();
     }
-
+    getLastMoves(){
+        return this.#lastMoves.slice();
+    }
     getBrain(){
         return new NeuralNetwork(this.#brain);
+    }
+    isDead(){
+        return (this.#dead ? true : false);
     }
     getScore(){
         return this.#score.valueOf();
     }
+    getBody(){ 
+        return this.#body.slice();
+    }
+    getPoints(){
+        return Object.assign({}, this.#points);
+    }
+    getTargets(){
+        return Object.assign({}, this.#targets);
+    }
+    getColor(){
+        return color(this.#color);
+    }
+    getFruit(){
+        return new Fruit(this.#fruit);
+    }
 
     setBrain(b){
         this.#brain = b;
+    }
+
+    ate(){
+        return JSON.stringify(this.#body[0]) == JSON.stringify(this.#fruit.getPos());
+    }
+
+    setFruitPos(x, y){
+        this.#fruit.setPos(x, y);
     }
 
     drawDist(){
@@ -111,7 +152,7 @@ class Snake {
 
     display(){
         stroke(this.getColor());
-        strokeWeight(this.#population.game.getPixel());
+        strokeWeight(this.population.game.getPixel());
         const body = this.getBody();
 
         let prev = body[0];
@@ -126,19 +167,19 @@ class Snake {
             }
         }
 
-        this.fruit.display();
+        this.#fruit.display();
     }
 
-    walk(dir) {
+    walk(dir){
         this.#body.unshift(this.#points[dir]);
         this.#body.pop();
 
         const head = this.#body[0];
-        const pixel = this.#population.game.getPixel();
-        const width = this.#population.game.getWidth();
-        const height = this.#population.game.getHeight();
+        const pixel = this.population.game.getPixel();
+        const width = this.population.game.getWidth();
+        const height = this.population.game.getHeight();
         this.#targets['tail'] = this.#body[this.#body.length - 1];
-        this.#targets['food'] = this.fruit.getPos();
+        this.#targets['food'] = this.#fruit.getPos();
         
         switch(this.#dir){
             case 'U':
@@ -217,9 +258,9 @@ class Snake {
     }
 
     checkCollision() {
-        const pixel = this.#population.game.getPixel();
-        const width = this.#population.game.getWidth();
-        const height = this.#population.game.getHeight();
+        const pixel = this.population.game.getPixel();
+        const width = this.population.game.getWidth();
+        const height = this.population.game.getHeight();
 
         if (
             this.#body[0].y <= 0 ||
@@ -243,7 +284,7 @@ class Snake {
 
     think(){
         let inputs = [];
-        let pixel = this.#population.game.getPixel();
+        let pixel = this.population.game.getPixel();
 
         Object.entries(this.#targets).map((t) => {
             Object.entries(this.#points).map((d) => {
@@ -258,8 +299,8 @@ class Snake {
                 }
             });
         });
-
         let output = this.#brain.predict(inputs);
+        console.log(inputs, output);
         switch (output.indexOf(Math.max(...output))){
             case 0:
                 this.walk('left');
@@ -274,11 +315,11 @@ class Snake {
     }
 
     calculateDistScore() {
-        const c1 = this.#body[0].x - this.fruit.getPos().x;
-        const c2 = this.#body[0].y - this.fruit.getPos().y;
-        const diag = Math.sqrt(this.#population.game.getHeight() * this.#population.game.getHeight() + this.#population.game.getWidth() * this.#population.game.getWidth());
+        const c1 = this.#body[0].x - this.#fruit.getPos().x;
+        const c2 = this.#body[0].y - this.#fruit.getPos().y;
+        const diag = Math.sqrt(this.population.game.getHeight() * this.population.game.getHeight() + this.population.game.getWidth() * this.population.game.getWidth());
         
-        const distToFood = Math.sqrt(c1 * c1 + c2 * c2) / this.#population.game.getPixel();
+        const distToFood = Math.sqrt(c1 * c1 + c2 * c2) / this.population.game.getPixel();
 
         return (diag - distToFood);
     }

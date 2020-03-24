@@ -4,7 +4,12 @@ class Fruit {
 
     #color = undefined;
 
-    constructor(c, g) {   
+    constructor(c, g) {  
+        if(c instanceof Fruit){
+            this.game = c.game;
+            this.#pos = c.getPos();
+            this.#color = c.getColor();
+        } 
         this.game = g;
 
         const margin = 4;

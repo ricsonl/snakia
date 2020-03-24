@@ -7,6 +7,8 @@ class Population {
     #backup = undefined;
 
     #fitness = undefined;
+    #bestScore = undefined;
+    #bestBrain = undefined;
 
     constructor(s, g) {
         if (s instanceof Population){
@@ -15,6 +17,8 @@ class Population {
             this.snakes = s.snakes.slice();
             this.#backup = s.getBackup();
             this.#fitness = s.getFitness();
+            this.#bestScore = s.getBestScore();
+            this.#bestBrain = s.getBestBrain();
         } else {
             this.game = g;
             this.#size = s;
@@ -25,6 +29,8 @@ class Population {
             }
             this.#backup = [];
             this.#fitness = 0;
+            this.#bestScore = 0;
+            this.#bestBrain = this.snakes[0].getBrain();
         }
     }
 
@@ -36,6 +42,24 @@ class Population {
     }
     getFitness(){
         return this.#fitness.valueOf();
+    }
+    getBestScore(){
+        return this.#bestScore.valueOf();
+    }
+    getBestBrain(){
+        let bestIndex = 0;
+        for (let i = 1; i < this.#backup.length; i++) {
+            if (this.#backup[i]['score'] > this.#backup[bestIndex]['score'])
+            bestIndex = i;
+        }
+        return this.#backup[bestIndex]['brain'];
+    }
+
+    checkBest(i){
+        if(this.snakes[i].getScore() > this.#bestScore){
+            this.#bestScore = this.snakes[i].getScore();
+            this.#bestBrain = this.snakes[i].getBrain();
+        }
     }
 
     removeSnake(i) {
@@ -87,14 +111,12 @@ class Population {
     }
 
     nextGeneration() {
+        //console.log(this.getBestScore());
         this.calculateFitness();
-        //console.log(this.#fitness, this.#backup);
-        let next = new Population(this);
+        let next = new Population(this.#size, this.game);
         for (let i = 0; i < this.#size; i++) {
-            //const randColor = color("hsl(" + Math.round(360 * i / this.#size) + ",80%,50%)");
             next.snakes[i] = this.pickOne();
         }
-        next.#backup = [];
         return next;
     }
 }
