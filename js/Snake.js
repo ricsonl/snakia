@@ -43,7 +43,7 @@ class Snake {
             this.#color = c.getColor();
             this.#fruit = new Fruit(c, p.game);
 
-            this.#obstacles = c.getObstacles();
+            c.updateObstacles();
         } else {
             this.#dir = 'U';
             this.#lastScores = [0,];
@@ -66,7 +66,7 @@ class Snake {
             this.#color = c;
             this.#fruit = new Fruit(c, this.population.game);
 
-            this.calculateObstacles();
+            this.updateObstacles();
         }
     }
 
@@ -105,6 +105,10 @@ class Snake {
         this.#brain = b;
     }
 
+    setDir(d){
+        this.#dir = d;
+    }
+
     setFruitPos(x, y){
         this.#fruit.setPos(x, y);
     }
@@ -122,8 +126,8 @@ class Snake {
         line(head.x, head.y, pointR.x, pointR.y);
         line(head.x, head.y, pointL.x, pointL.y);
 
-        strokeWeight(5);
-        stroke(color(0, 100, 255));
+        strokeWeight(7);
+        stroke(color(150, 150, 150));
         for (let i = 0; i < this.#obstacles.length; i++) {
             line(this.#obstacles[i].x, this.#obstacles[i].y, this.#obstacles[i].x, this.#obstacles[i].y);
         }
@@ -149,7 +153,8 @@ class Snake {
         this.#fruit.display();
     }
 
-    calculateObstacles(){
+    updateObstacles(){
+        const head = this.#body[0];
         const pixel = this.population.game.getPixel();
         const width = this.population.game.getWidth();
         const height = this.population.game.getHeight();
@@ -157,11 +162,13 @@ class Snake {
         this.#obstacles = [];
         this.#obstacles.push(this.#fruit.getPos());
 
-        for(let h = 0; h < height; h++){
-            this.#obstacles.push({ x: 0, y: h*pixel});
+        for(let h = 1; h < height; h++){
+            let c1 = head.x;
+            let c2 = head.y - h*pixel;
+            this.#obstacles.push([{ x: 0, y: h*pixel}, ]);
             this.#obstacles.push({ x: width*pixel, y: h*pixel});
         }
-        for(let w = 0; w < width; w++){
+        for(let w = 1; w < width; w++){
             this.#obstacles.push({ x: w*pixel, y: 0});
             this.#obstacles.push({ x: w*pixel, y: height*pixel});
         }
@@ -178,61 +185,45 @@ class Snake {
         let res = {
             'point': undefined,
             'dist': undefined,
-            'isFood': undefined,
+            'isFood': 0,
         }
         switch(this.#dir){
             case 'U':
-                if (head.x == this.#fruit.getPos().x && head.y > this.#fruit.getPos().y){
-                    res['isFood'] = 1;    
-                    res['point'] = this.#fruit.getPos();
-                } else {
-                    res['isFood'] = 0; 
-                    res['point'] = { x: head.x, y: 0 };
-                    for(let i = 0; i < this.#body.length; i++){
-
-                    }
+                for(let o = 0; o < this.#obstacles.length; o++){
+                    if (head.x == this.#obstacles[o].x && head.y > this.#obstacles[o].y){
+                        res['point'] = this.#obstacles[o];
+                        if(o == 0) res['isFood'] = 1;
+                    } 
                 }
                 res['dist'] = Math.abs(res['point'].y - head.y) / (height*pixel);
                 break;
 
             case 'R':
-                if (head.y == this.#fruit.getPos().y && head.x < this.#fruit.getPos().x){
-                    res['isFood'] = 1;    
-                    res['point'] = this.#fruit.getPos();
-                } else {
-                    res['isFood'] = 0; 
-                    res['point'] = { x: width*pixel, y: head.y };
-                    for(let i = 0; i < this.#body.length; i++){
-
-                    }
+                for(let o = 0; o < this.#obstacles.length; o++){
+                    if (head.y == this.#obstacles[o].y && head.x < this.#obstacles[o].x){
+                        res['point'] = this.#obstacles[o];
+                        if(o == 0) res['isFood'] = 1;
+                    } 
                 }
                 res['dist'] = Math.abs(res['point'].x - head.x) /(width*pixel);
                 break;
 
             case 'D':
-                if (head.x == this.#fruit.getPos().x && head.y < this.#fruit.getPos().y){
-                    res['isFood'] = 1;    
-                    res['point'] = this.#fruit.getPos();
-                } else {
-                    res['isFood'] = 0; 
-                    res['point'] = { x: head.x, y: height*pixel };
-                    for(let i = 0; i < this.#body.length; i++){
-
-                    }
+                for(let o = 0; o < this.#obstacles.length; o++){
+                    if (head.x == this.#obstacles[o].x && head.y < this.#obstacles[o].y){
+                        res['point'] = this.#obstacles[o];
+                        if(o == 0) res['isFood'] = 1;
+                    } 
                 }
                 res['dist'] = Math.abs(res['point'].y - head.y) / (height*pixel);
                 break;
 
             case 'L':
-                if (head.y == this.#fruit.getPos().y && head.x > this.#fruit.getPos().x){
-                    res['isFood'] = 1;    
-                    res['point'] = this.#fruit.getPos();
-                } else {
-                    res['isFood'] = 0; 
-                    res['point'] = { x: 0, y: head.y };
-                    for(let i = 0; i < this.#body.length; i++){
-
-                    }
+                for(let o = 0; o < this.#obstacles.length; o++){
+                    if (head.y == this.#obstacles[o].y && head.x > this.#obstacles[o].x){
+                        res['point'] = this.#obstacles[o];
+                        if(o == 0) res['isFood'] = 1;
+                    } 
                 }
                 res['dist'] = Math.abs(res['point'].x - head.x) /(width*pixel);
                 break;
@@ -249,61 +240,45 @@ class Snake {
         let res = {
             'point': undefined,
             'dist': undefined,
-            'isFood': undefined,
+            'isFood': 0,
         }
         switch(this.#dir){
             case 'U':
-                if (head.y == this.#fruit.getPos().y && head.x < this.#fruit.getPos().x){
-                    res['isFood'] = 1;    
-                    res['point'] = this.#fruit.getPos();
-                } else {
-                    res['isFood'] = 0; 
-                    res['point'] = { x: width*pixel, y: head.y };
-                    for(let i = 0; i < this.#body.length; i++){
-
-                    }
+                for(let o = 0; o < this.#obstacles.length; o++){
+                    if (head.y == this.#obstacles[o].y && head.x < this.#obstacles[o].x){
+                        res['point'] = this.#obstacles[o];
+                        if(o == 0) res['isFood'] = 1;
+                    } 
                 }
                 res['dist'] = Math.abs(res['point'].x - head.x) / (width*pixel);
                 break;
 
             case 'R':
-                if (head.x == this.#fruit.getPos().x && head.y < this.#fruit.getPos().y){
-                    res['isFood'] = 1;    
-                    res['point'] = this.#fruit.getPos();
-                } else {
-                    res['isFood'] = 0; 
-                    res['point'] = { x: head.x, y: height*pixel };
-                    for(let i = 0; i < this.#body.length; i++){
-
-                    }
+                for(let o = 0; o < this.#obstacles.length; o++){
+                    if (head.x == this.#obstacles[o].x && head.y < this.#obstacles[o].y){
+                        res['point'] = this.#obstacles[o];
+                        if(o == 0) res['isFood'] = 1;
+                    } 
                 }
                 res['dist'] = Math.abs(res['point'].y - head.y) /(height*pixel);
                 break;
 
             case 'D':
-                if (head.y == this.#fruit.getPos().y && head.x > this.#fruit.getPos().x){
-                    res['isFood'] = 1;    
-                    res['point'] = this.#fruit.getPos();
-                } else {
-                    res['isFood'] = 0; 
-                    res['point'] = { x: 0, y: head.y };
-                    for(let i = 0; i < this.#body.length; i++){
-
-                    }
+                for(let o = 0; o < this.#obstacles.length; o++){
+                    if (head.y == this.#obstacles[o].y && head.x > this.#obstacles[o].x){
+                        res['point'] = this.#obstacles[o];
+                        if(o == 0) res['isFood'] = 1;
+                    } 
                 }
                 res['dist'] = Math.abs(res['point'].x - head.x) / (width*pixel);
                 break;
 
             case 'L':
-                if (head.x == this.#fruit.getPos().x && head.y > this.#fruit.getPos().y){
-                    res['isFood'] = 1;    
-                    res['point'] = this.#fruit.getPos();
-                } else {
-                    res['isFood'] = 0; 
-                    res['point'] = { x: head.x, y: 0 };
-                    for(let i = 0; i < this.#body.length; i++){
-
-                    }
+                for(let o = 0; o < this.#obstacles.length; o++){
+                    if (head.x == this.#obstacles[o].x && head.y > this.#obstacles[o].y){
+                        res['point'] = this.#obstacles[o];
+                        if(o == 0) res['isFood'] = 1;
+                    } 
                 }
                 res['dist'] = Math.abs(res['point'].y - head.y) /(height*pixel);
                 break;
@@ -320,55 +295,50 @@ class Snake {
         let res = {
             'point': undefined,
             'dist': undefined,
-            'isFood': undefined,
+            'isFood': 0,
         }
         switch(this.#dir){
             case 'U':
-                if (head.y == this.#fruit.getPos().y && head.x > this.#fruit.getPos().x){
-                    res['isFood'] = 1;    
-                    res['point'] = this.#fruit.getPos();
-                } else {
-                    res['isFood'] = 0; 
-                    res['point'] = { x: 0, y: head.y };
+                for(let o = 0; o < this.#obstacles.length; o++){
+                    if (head.y == this.#obstacles[o].y && head.x > this.#obstacles[o].x){
+                        res['point'] = this.#obstacles[o];
+                        if(o == 0) res['isFood'] = 1;
+                    } 
                 }
-                res['dist'] = Math.abs(res['point'].y - head.y) / (height*pixel);
+                res['dist'] = Math.abs(res['point'].x - head.x) / (width*pixel);
                 break;
 
             case 'R':
-                if (head.x == this.#fruit.getPos().x && head.y > this.#fruit.getPos().y){
-                    res['isFood'] = 1;    
-                    res['point'] = this.#fruit.getPos();
-                } else {
-                    res['isFood'] = 0; 
-                    res['point'] = { x: head.x, y: 0 };
+                for(let o = 0; o < this.#obstacles.length; o++){
+                    if (head.x == this.#obstacles[o].x && head.y > this.#obstacles[o].y){
+                        res['point'] = this.#obstacles[o];
+                        if(o == 0) res['isFood'] = 1;
+                    } 
                 }
-                res['dist'] = Math.abs(res['point'].x - head.x) /(width*pixel);
+                res['dist'] = Math.abs(res['point'].y - head.y) /(height*pixel);
                 break;
 
             case 'D':
-                if (head.y == this.#fruit.getPos().y && head.x < this.#fruit.getPos().x){
-                    res['isFood'] = 1;    
-                    res['point'] = this.#fruit.getPos();
-                } else {
-                    res['isFood'] = 0; 
-                    res['point'] = { x: width*pixel, y: head.y };
+                for(let o = 0; o < this.#obstacles.length; o++){
+                    if (head.y == this.#obstacles[o].y && head.x < this.#obstacles[o].x){
+                        res['point'] = this.#obstacles[o];
+                        if(o == 0) res['isFood'] = 1;
+                    } 
                 }
-                res['dist'] = Math.abs(res['point'].y - head.y) / (height*pixel);
+                res['dist'] = Math.abs(res['point'].x - head.x) / (width*pixel);
                 break;
 
             case 'L':
-                if (head.x == this.#fruit.getPos().x && head.y < this.#fruit.getPos().y){
-                    res['isFood'] = 1;    
-                    res['point'] = this.#fruit.getPos();
-                } else {
-                    res['isFood'] = 0; 
-                    res['point'] = { x: head.x, y: height*pixel };
+                for(let o = 0; o < this.#obstacles.length; o++){
+                    if (head.x == this.#obstacles[o].x && head.y < this.#obstacles[o].y){
+                        res['point'] = this.#obstacles[o];
+                        if(o == 0) res['isFood'] = 1;
+                    } 
                 }
-                res['dist'] = Math.abs(res['point'].x - head.x) /(width*pixel);
+                res['dist'] = Math.abs(res['point'].y - head.y) /(height*pixel);
                 break;
 
         }
-        
         return res;
     }
 
@@ -392,7 +362,6 @@ class Snake {
                 this.#body.unshift({ x: x - pixel, y: y });
                 break;
         }
-        this.calculateObstacles();
     }
     walkRight(){
         this.#body.pop();
@@ -418,7 +387,6 @@ class Snake {
                 this.#dir = 'U';
                 break;
         }
-        this.calculateObstacles();
     }
     walkLeft(){
         this.#body.pop();
@@ -444,7 +412,6 @@ class Snake {
                 this.#dir = 'D';
                 break;
         }
-        this.calculateObstacles();
     }
 
     ate(){
@@ -481,14 +448,23 @@ class Snake {
         }
     }
 
-    think(){    
+    follow(){
+        const le = this.lookLeft();
+        const ah = this.lookAhead();
+        const ri = this.lookRight();
+        console.log(le, ah, ri);
+        this.walkAhead();
+        this.updateObstacles();
+    }
+
+    think(){   
         let inputs = [0, 1, 1, 0, 1, 0];
 
-        /*let ah = this.lookAhead();
+        let ah = this.lookAhead();
         let ri = this.lookRight();
         let le = this.lookLeft();
 
-        console.log(ah, ri, le);*/
+        console.log(le, ah, ri);
         //
 
         const output = this.#brain.predict(inputs);
@@ -504,6 +480,7 @@ class Snake {
                 this.walkRight();
                 break;
         }
+        this.updateObstacles();
     }
 
     mutate() {

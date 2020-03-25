@@ -11,8 +11,8 @@ class Game {
     constructor(s){
         this.#pixel = 20;
 
-        this.#height = (windowHeight*98/100) / this.#pixel;
-        this.#width = (windowWidth*4/5) / this.#pixel;
+        this.#height = Math.floor((windowHeight*98/100) / this.#pixel);
+        this.#width = Math.floor((windowWidth*4/5) / this.#pixel);
 
         this.#color = color(0, 0, 0);
 
@@ -20,7 +20,7 @@ class Game {
         this.#generation = 1;
 
         createCanvas(this.#width * this.#pixel, this.#height * this.#pixel);
-        frameRate(8);
+        frameRate(0.7);
     }
     
     getPixel(){
@@ -40,20 +40,26 @@ class Game {
     }
 
     evolve(cycles, dists){
+        this.display(dists);
         for (let c = 0; c < cycles; c++) {
             for (let i = 0; i < this.#population.snakes.length; i++) {
                 if (this.#population.snakes[i].ate()) {
                     this.#population.snakes[i].grow();
                     this.#population.snakes[i].setFruitPos(Math.floor(Math.random() * (this.getWidth() - 2) + 2), Math.floor(Math.random() * (this.getHeight() - 2) + 2));
                 }
-                //this.#population.snakes[i].think();
+                //this.#population.snakes[i].follow();
+                this.#population.snakes[i].think();
                 this.#population.snakes[i].checkCollision();
-                this.#population.checkBest(i);
             }
 
             for (let i = 0; i < this.#population.snakes.length; i++)
-                if (this.#population.snakes[i].isDead())
+                if (this.#population.snakes[i].isDead()){
                     this.#population.removeSnake(i);
+                    i--;
+                }
+
+            for (let i = 0; i < this.#population.snakes.length; i++)
+                this.#population.checkBest(i);
 
             if (this.#population.snakes.length == 0) {
                 this.#population = this.#population.nextGeneration();
@@ -61,7 +67,6 @@ class Game {
                 break;
             }
         }
-        this.display(dists);
     }
 
     display(lines=false) {
@@ -76,19 +81,21 @@ class Game {
 
     humanControl(key) {
         switch (key) {
-            case 39:
-                this.#population.snakes[0].walkRight();
+            case 38:
+                if (this.#population.snakes[0].getDir() != 'D') this.#population.snakes[0].setDir('U');
                 break;
-            case 37:
-                this.#population.snakes[0].walkLeft();
-                break;
-            default:
-                this.#population.snakes[0].walkAhead();
-        }
-        let le = this.#population.snakes[0].lookLeft();
-        let ah = this.#population.snakes[0].lookAhead();
-        let ri = this.#population.snakes[0].lookRight();
 
-        console.log(le, ah, ri);
+            case 39:
+                if (this.#population.snakes[0].getDir() != 'L') this.#population.snakes[0].setDir('R');
+                break;
+
+            case 40:
+                if (this.#population.snakes[0].getDir() != 'U') this.#population.snakes[0].setDir('D');
+                break;
+
+            case 37:
+                if (this.#population.snakes[0].getDir() != 'R') this.#population.snakes[0].setDir('L');
+                break;
+        }
     }
 }
