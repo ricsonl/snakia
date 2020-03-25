@@ -9,51 +9,43 @@ function mutateFunc(x) {
 }
 
 class Snake {
+    population = undefined;
+
+    #color = undefined;
+    #body = undefined;
+    #fruit = undefined;
+
     #dir = undefined;
-    #lastScores = undefined;
-    #lastMoves = undefined;
+    #lastDist = undefined;
+    #dist = undefined;
     #brain = undefined;
 
     #dead = undefined;
     #score = undefined;
 
-    population = undefined;
-
-    #body = undefined;
-
-    #color = undefined;
-    #fruit = undefined;
-
     #obstacles = undefined;
 
     constructor(c, p){
         if(c instanceof Snake){
+            this.population = c.population;
+
+            this.#color = c.getColor();
+            this.#body = c.getBody();
+            this.#fruit = new Fruit(c, p.game);
+
             this.#dir = c.getDir();
-            this.#lastScores = c.getLastScores();
-            this.#lastMoves = c.getLastMoves();
+            this.#lastDist = c.getLastDist();
+            this.#dist = c.getDist();
             this.#brain = new NeuralNetwork(c.getBrain());
 
             this.#dead = c.isDead();
             this.#score = c.getScore();
 
-            this.population = c.population;
-
-            this.#body = c.getBody();
-
-            this.#color = c.getColor();
-            this.#fruit = new Fruit(c, p.game);
-
             c.updateObstacles();
         } else {
-            this.#dir = 'U';
-            this.#lastScores = [0,];
-            this.#lastMoves = ['ahead'];
-            this.#brain = new NeuralNetwork(6, 5, 3);
-
-            this.#score = 0;
-            this.#dead = false;
-
             this.population = p;
+
+            this.#color = c;
 
             const x = Math.floor(this.population.game.getWidth() / 2);
             const y = Math.floor(this.population.game.getHeight() * (7 / 8));
@@ -62,8 +54,15 @@ class Snake {
                 { x: x * p.game.getPixel(), y: (y + 1) * p.game.getPixel() }
             ];
 
-            this.#color = c;
             this.#fruit = new Fruit(c, this.population.game);
+
+            this.#dir = 'U';
+            this.#lastDist = this.distToFruit();
+            this.#dist = this.distToFruit();
+            this.#brain = new NeuralNetwork(6, 5, 3);
+
+            this.#score = 0;
+            this.#dead = false;
 
             this.updateObstacles();
         }
@@ -72,11 +71,11 @@ class Snake {
     getDir(){
         return this.#dir.valueOf();
     }
-    getLastScores(){
-        return this.#lastScores.slice();
+    getLastDist(){
+        return this.#lastDist.valueOf();
     }
-    getLastMoves(){
-        return this.#lastMoves.slice();
+    getDist(){
+        return this.#dist.valueOf();
     }
     getBrain(){
         return new NeuralNetwork(this.#brain);
@@ -151,6 +150,10 @@ class Snake {
         }
 
         this.#fruit.display();
+    }
+
+    calculateDist(){
+
     }
 
     updateObstacles(){
@@ -340,6 +343,22 @@ class Snake {
         }
     }
 
+    update(){
+        if (this.ate()) {
+            this.#score += 10;
+            this.grow();
+            this.setFruitPos(Math.floor(Math.random() * (this.population.game.getWidth() - 2) + 2), Math.floor(Math.random() * (this.population.game.getHeight() - 2) + 2));
+        }
+
+        this.#lastDist = this.#dist;
+        this.#dist = this.distToFruit();
+ 
+        if(this.#dist < this.#lastDist) this.#score += 1;
+        else if(this.#dist > this.#lastDist) this.#score -= 1.5;
+        
+        if(this.#score < -4) this.#dead = true;
+    }
+
     follow(){
         const le = this.lookLeft();
         const ah = this.lookAhead();
@@ -355,7 +374,7 @@ class Snake {
         let ah = this.lookAhead();
         let ri = this.lookRight();
         let le = this.lookLeft();
-        
+
         let inputs = [  
             ah[0], ri[0], le[0], 
             ah[1], ri[1], le[1]

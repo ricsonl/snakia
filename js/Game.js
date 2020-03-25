@@ -20,7 +20,7 @@ class Game {
         this.#generation = 1;
 
         createCanvas(this.#width * this.#pixel, this.#height * this.#pixel);
-        frameRate(8);
+        frameRate(0.8);
     }
     
     getPixel(){
@@ -43,10 +43,7 @@ class Game {
         this.display(dists);
         for (let c = 0; c < cycles; c++) {
             for (let i = 0; i < this.#population.snakes.length; i++) {
-                if (this.#population.snakes[i].ate()) {
-                    this.#population.snakes[i].grow();
-                    this.#population.snakes[i].setFruitPos(Math.floor(Math.random() * (this.getWidth() - 2) + 2), Math.floor(Math.random() * (this.getHeight() - 2) + 2));
-                }
+                this.#population.snakes[i].update();
                 this.#population.snakes[i].think();
                 this.#population.snakes[i].checkCollision();
             }
@@ -57,8 +54,7 @@ class Game {
                     i--;
                 }
 
-            for (let i = 0; i < this.#population.snakes.length; i++)
-                this.#population.checkBest(i);
+            this.#population.checkBest();
 
             if (this.#population.snakes.length == 0) {
                 this.#population = this.#population.nextGeneration();
