@@ -20,7 +20,7 @@ class Game {
         this.#generation = 1;
 
         createCanvas(this.#width * this.#pixel, this.#height * this.#pixel);
-        frameRate(0.8);
+        frameRate(8);
     }
     
     getPixel(){

@@ -85,7 +85,7 @@ class Population {
         this.#fitness = sum;
 
         for (let i = 0; i < this.#backup.length; i++) {
-            this.#backup[i]['fitness'] = this.calculateSnakeFinalScore(i) / this.#fitness;
+            this.#backup[i]['fitness'] = this.#backup[i]['score'] / this.#fitness;
         }
     }
 

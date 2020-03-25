@@ -152,10 +152,6 @@ class Snake {
         this.#fruit.display();
     }
 
-    calculateDist(){
-
-    }
-
     updateObstacles(){
         const head = this.#body[0];
         const food = this.#fruit.getPos();
@@ -345,7 +341,7 @@ class Snake {
 
     update(){
         if (this.ate()) {
-            this.#score += 10;
+            this.#score += 100;
             this.grow();
             this.setFruitPos(Math.floor(Math.random() * (this.population.game.getWidth() - 2) + 2), Math.floor(Math.random() * (this.population.game.getHeight() - 2) + 2));
         }
@@ -355,7 +351,7 @@ class Snake {
  
         if(this.#dist < this.#lastDist) this.#score += 1;
         else if(this.#dist > this.#lastDist) this.#score -= 1.5;
-        
+
         if(this.#score < -4) this.#dead = true;
     }
 
