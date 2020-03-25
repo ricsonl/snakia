@@ -59,8 +59,7 @@ class Snake {
             const y = Math.floor(this.population.game.getHeight() * (7 / 8));
             this.#body = [
                 { x: x * p.game.getPixel(), y: y * p.game.getPixel() },
-                { x: x * p.game.getPixel(), y: (y + 1) * p.game.getPixel() },
-                /*{ x: x*p.game.getPixel(), y: (y+2)*p.game.getPixel() },*/
+                { x: x * p.game.getPixel(), y: (y + 1) * p.game.getPixel() }
             ];
 
             this.#color = c;
@@ -97,18 +96,19 @@ class Snake {
     getFruit(){
         return new Fruit(this.#fruit);
     }
-    getObstacles() {
+    getObstacles(){
         return this.#obstacles.slice();
     }
 
     setBrain(b){
         this.#brain = b;
     }
-
     setDir(d){
         this.#dir = d;
     }
-
+    setScore(s){
+        this.#score = s;
+    }
     setFruitPos(x, y){
         this.#fruit.setPos(x, y);
     }
@@ -116,9 +116,9 @@ class Snake {
     drawLines(){
         const head = this.#body[0];
 
-        const pointA = this.lookAhead()['point'];
-        const pointR = this.lookRight()['point'];
-        const pointL = this.lookLeft()['point'];
+        const pointA = this.lookAhead()[2];
+        const pointR = this.lookRight()[2];
+        const pointL = this.lookLeft()[2];
         
         strokeWeight(0.6);
         stroke(this.#color);
@@ -127,10 +127,10 @@ class Snake {
         line(head.x, head.y, pointL.x, pointL.y);
 
         strokeWeight(7);
-        stroke(color(150, 150, 150));
-        for (let i = 0; i < this.#obstacles.length; i++) {
-            line(this.#obstacles[i].x, this.#obstacles[i].y, this.#obstacles[i].x, this.#obstacles[i].y);
-        }
+        stroke(color(190, 190, 190));
+        line(pointA.x, pointA.y, pointA.x, pointA.y);
+        line(pointR.x, pointR.y, pointR.x, pointR.y);
+        line(pointL.x, pointL.y, pointL.x, pointL.y);
     }
 
     display(){
@@ -155,191 +155,89 @@ class Snake {
 
     updateObstacles(){
         const head = this.#body[0];
+        const food = this.#fruit.getPos();
         const pixel = this.population.game.getPixel();
         const width = this.population.game.getWidth();
         const height = this.population.game.getHeight();
 
         this.#obstacles = [];
-        this.#obstacles.push(this.#fruit.getPos());
+        
+        var dist;
+        var max = Math.max(height*pixel, width*pixel);
+
+        if(head.x == food.x){
+            dist = Math.abs(head.y - food.y) / max;
+            this.#obstacles.push([1, dist, food]);
+        } else if (head.y == food.y){
+            dist = Math.abs(head.x - food.x) / max;
+            this.#obstacles.push([1, dist, food]);
+        }
 
         for(let h = 1; h < height; h++){
-            let c1 = head.x;
-            let c2 = head.y - h*pixel;
-            this.#obstacles.push([{ x: 0, y: h*pixel}, ]);
-            this.#obstacles.push({ x: width*pixel, y: h*pixel});
+            if (head.y == h * pixel){
+                dist = head.x / max;
+                this.#obstacles.push([0, dist, { x: 0, y: h * pixel}]);
+                dist = Math.abs(head.x - width * pixel) / max;
+                this.#obstacles.push([0, dist, { x: width * pixel, y: h*pixel}]);
+            }
         }
         for(let w = 1; w < width; w++){
-            this.#obstacles.push({ x: w*pixel, y: 0});
-            this.#obstacles.push({ x: w*pixel, y: height*pixel});
+            if (head.x == w * pixel) {
+                dist = head.y / max;
+                this.#obstacles.push([0, dist, { x: w * pixel, y: 0 }]);
+                dist = Math.abs(head.y - height * pixel) / max;
+                this.#obstacles.push([0, dist, { x: w * pixel, y: height * pixel }]);
+            }
         }
-        for(let b = 1; b < this.#body.length; b++){
-            this.#obstacles.push(this.#body[b]);
+
+        var segm;
+
+        for(let s = 1; s < this.#body.length; s++){
+            segm = this.#body[s];
+            if (head.x == segm.x) {
+                dist = Math.abs(head.y - segm.y) / max;
+                this.#obstacles.push([0, dist, segm]);
+            } else if (head.y == segm.y) {
+                dist = Math.abs(head.x - segm.x) / max;
+                this.#obstacles.push([0, dist, segm]);
+            }
         }
+
+        this.#obstacles.sort((a, b) => (a[1] > b[1]) ? 1 : -1);
     }
 
     lookAhead(){
         const head = this.#body[0];
-        const pixel = this.population.game.getPixel();
-        const width = this.population.game.getWidth();
-        const height = this.population.game.getHeight();
-        let res = {
-            'point': undefined,
-            'dist': undefined,
-            'isFood': 0,
+        for(let o = 0; o < this.#obstacles.length; o++){
+            if (
+                this.#dir == 'U' && head.x == this.#obstacles[o][2].x && head.y > this.#obstacles[o][2].y ||
+                this.#dir == 'R' && head.y == this.#obstacles[o][2].y && head.x < this.#obstacles[o][2].x ||
+                this.#dir == 'D' && head.x == this.#obstacles[o][2].x && head.y < this.#obstacles[o][2].y ||
+                this.#dir == 'L' && head.y == this.#obstacles[o][2].y && head.x > this.#obstacles[o][2].x
+            ) { return this.#obstacles[o]; }   
         }
-        switch(this.#dir){
-            case 'U':
-                for(let o = 0; o < this.#obstacles.length; o++){
-                    if (head.x == this.#obstacles[o].x && head.y > this.#obstacles[o].y){
-                        res['point'] = this.#obstacles[o];
-                        if(o == 0) res['isFood'] = 1;
-                    } 
-                }
-                res['dist'] = Math.abs(res['point'].y - head.y) / (height*pixel);
-                break;
-
-            case 'R':
-                for(let o = 0; o < this.#obstacles.length; o++){
-                    if (head.y == this.#obstacles[o].y && head.x < this.#obstacles[o].x){
-                        res['point'] = this.#obstacles[o];
-                        if(o == 0) res['isFood'] = 1;
-                    } 
-                }
-                res['dist'] = Math.abs(res['point'].x - head.x) /(width*pixel);
-                break;
-
-            case 'D':
-                for(let o = 0; o < this.#obstacles.length; o++){
-                    if (head.x == this.#obstacles[o].x && head.y < this.#obstacles[o].y){
-                        res['point'] = this.#obstacles[o];
-                        if(o == 0) res['isFood'] = 1;
-                    } 
-                }
-                res['dist'] = Math.abs(res['point'].y - head.y) / (height*pixel);
-                break;
-
-            case 'L':
-                for(let o = 0; o < this.#obstacles.length; o++){
-                    if (head.y == this.#obstacles[o].y && head.x > this.#obstacles[o].x){
-                        res['point'] = this.#obstacles[o];
-                        if(o == 0) res['isFood'] = 1;
-                    } 
-                }
-                res['dist'] = Math.abs(res['point'].x - head.x) /(width*pixel);
-                break;
-
-        }
-        
-        return res;
     }
     lookRight(){
         const head = this.#body[0];
-        const pixel = this.population.game.getPixel();
-        const width = this.population.game.getWidth();
-        const height = this.population.game.getHeight();
-        let res = {
-            'point': undefined,
-            'dist': undefined,
-            'isFood': 0,
+        for(let o = 0; o < this.#obstacles.length; o++){
+            if (
+                this.#dir == 'U' && head.y == this.#obstacles[o][2].y && head.x < this.#obstacles[o][2].x ||
+                this.#dir == 'R' && head.x == this.#obstacles[o][2].x && head.y < this.#obstacles[o][2].y ||
+                this.#dir == 'D' && head.y == this.#obstacles[o][2].y && head.x > this.#obstacles[o][2].x ||
+                this.#dir == 'L' && head.x == this.#obstacles[o][2].x && head.y > this.#obstacles[o][2].y
+            ) { return this.#obstacles[o]; }     
         }
-        switch(this.#dir){
-            case 'U':
-                for(let o = 0; o < this.#obstacles.length; o++){
-                    if (head.y == this.#obstacles[o].y && head.x < this.#obstacles[o].x){
-                        res['point'] = this.#obstacles[o];
-                        if(o == 0) res['isFood'] = 1;
-                    } 
-                }
-                res['dist'] = Math.abs(res['point'].x - head.x) / (width*pixel);
-                break;
-
-            case 'R':
-                for(let o = 0; o < this.#obstacles.length; o++){
-                    if (head.x == this.#obstacles[o].x && head.y < this.#obstacles[o].y){
-                        res['point'] = this.#obstacles[o];
-                        if(o == 0) res['isFood'] = 1;
-                    } 
-                }
-                res['dist'] = Math.abs(res['point'].y - head.y) /(height*pixel);
-                break;
-
-            case 'D':
-                for(let o = 0; o < this.#obstacles.length; o++){
-                    if (head.y == this.#obstacles[o].y && head.x > this.#obstacles[o].x){
-                        res['point'] = this.#obstacles[o];
-                        if(o == 0) res['isFood'] = 1;
-                    } 
-                }
-                res['dist'] = Math.abs(res['point'].x - head.x) / (width*pixel);
-                break;
-
-            case 'L':
-                for(let o = 0; o < this.#obstacles.length; o++){
-                    if (head.x == this.#obstacles[o].x && head.y > this.#obstacles[o].y){
-                        res['point'] = this.#obstacles[o];
-                        if(o == 0) res['isFood'] = 1;
-                    } 
-                }
-                res['dist'] = Math.abs(res['point'].y - head.y) /(height*pixel);
-                break;
-
-        }
-        
-        return res;
     }
     lookLeft(){
         const head = this.#body[0];
-        const pixel = this.population.game.getPixel();
-        const width = this.population.game.getWidth();
-        const height = this.population.game.getHeight();
-        let res = {
-            'point': undefined,
-            'dist': undefined,
-            'isFood': 0,
+        for(let o = 0; o < this.#obstacles.length; o++){
+            if (
+                this.#dir == 'U' && head.y == this.#obstacles[o][2].y && head.x > this.#obstacles[o][2].x ||
+                this.#dir == 'R' && head.x == this.#obstacles[o][2].x && head.y > this.#obstacles[o][2].y ||
+                this.#dir == 'D' && head.y == this.#obstacles[o][2].y && head.x < this.#obstacles[o][2].x ||
+                this.#dir == 'L' && head.x == this.#obstacles[o][2].x && head.y < this.#obstacles[o][2].y
+            ) { return this.#obstacles[o]; }    
         }
-        switch(this.#dir){
-            case 'U':
-                for(let o = 0; o < this.#obstacles.length; o++){
-                    if (head.y == this.#obstacles[o].y && head.x > this.#obstacles[o].x){
-                        res['point'] = this.#obstacles[o];
-                        if(o == 0) res['isFood'] = 1;
-                    } 
-                }
-                res['dist'] = Math.abs(res['point'].x - head.x) / (width*pixel);
-                break;
-
-            case 'R':
-                for(let o = 0; o < this.#obstacles.length; o++){
-                    if (head.x == this.#obstacles[o].x && head.y > this.#obstacles[o].y){
-                        res['point'] = this.#obstacles[o];
-                        if(o == 0) res['isFood'] = 1;
-                    } 
-                }
-                res['dist'] = Math.abs(res['point'].y - head.y) /(height*pixel);
-                break;
-
-            case 'D':
-                for(let o = 0; o < this.#obstacles.length; o++){
-                    if (head.y == this.#obstacles[o].y && head.x < this.#obstacles[o].x){
-                        res['point'] = this.#obstacles[o];
-                        if(o == 0) res['isFood'] = 1;
-                    } 
-                }
-                res['dist'] = Math.abs(res['point'].x - head.x) / (width*pixel);
-                break;
-
-            case 'L':
-                for(let o = 0; o < this.#obstacles.length; o++){
-                    if (head.x == this.#obstacles[o].x && head.y < this.#obstacles[o].y){
-                        res['point'] = this.#obstacles[o];
-                        if(o == 0) res['isFood'] = 1;
-                    } 
-                }
-                res['dist'] = Math.abs(res['point'].y - head.y) /(height*pixel);
-                break;
-
-        }
-        return res;
     }
 
     walkAhead(){
@@ -414,37 +312,31 @@ class Snake {
         }
     }
 
+    distToFruit(){
+        const pixel = this.population.game.getPixel();
+        const width = this.population.game.getWidth();
+        const height = this.population.game.getHeight();
+        const max = Math.max(height * pixel, width * pixel);
+        const c1 = this.#body[0].x - this.#fruit.getPos().x;
+        const c2 = this.#body[0].y - this.#fruit.getPos().y;
+        return Math.sqrt(c1 * c1 + c2 * c2)/max;
+    }
+
     ate(){
         return JSON.stringify(this.#body[0]) == JSON.stringify(this.#fruit.getPos());
     }
 
-    grow() {
+    grow(){
         this.#body.push(this.#body[this.#body.length - 1]);
-        this.#score++;
     }
 
-    checkCollision() {
-        const pixel = this.population.game.getPixel();
-        const width = this.population.game.getWidth();
-        const height = this.population.game.getHeight();
-
-        if (
-            this.#body[0].y <= 0 ||
-            this.#body[0].x <= 0 ||
-            this.#body[0].x >= width * pixel ||
-            this.#body[0].y >= height * pixel
-            ){
+    checkCollision(){
+        const head = this.#body[0];
+        var obs;
+        for(let i = 0; i < this.#obstacles.length; i++){
+            obs = this.#obstacles[i];
+            if (obs[0] != 1 && JSON.stringify(head) == JSON.stringify(obs[2]))
                 this.#dead = true;
-            }
-            
-        const _x = this.#body[0].x;
-        const _y = this.#body[0].y;
-
-        for (let i = 1; i < this.#body.length; i++) {
-            let segm = this.#body[i];
-            if (segm.x == _x && segm.y == _y){
-                this.#dead = true;
-            }
         }
     }
 
@@ -452,23 +344,24 @@ class Snake {
         const le = this.lookLeft();
         const ah = this.lookAhead();
         const ri = this.lookRight();
-        console.log(le, ah, ri);
-        this.walkAhead();
+        /*console.log(le[0]);
+        console.log(ah[0]);
+        console.log(ri[0]);
+        this.walkAhead();*/
         this.updateObstacles();
     }
 
     think(){   
-        let inputs = [0, 1, 1, 0, 1, 0];
-
         let ah = this.lookAhead();
         let ri = this.lookRight();
         let le = this.lookLeft();
-
-        console.log(le, ah, ri);
-        //
+        
+        let inputs = [  
+            ah[0], ri[0], le[0], 
+            ah[1], ri[1], le[1]
+        ];
 
         const output = this.#brain.predict(inputs);
-        //console.log(inputs, output);
         switch (output.indexOf(Math.max(...output))){
             case 0:
                 this.walkLeft();
@@ -482,8 +375,7 @@ class Snake {
         }
         this.updateObstacles();
     }
-
-    mutate() {
+    mutate(){
         this.#brain.mutate(mutateFunc);
     }
 }

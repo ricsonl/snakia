@@ -20,7 +20,7 @@ class Game {
         this.#generation = 1;
 
         createCanvas(this.#width * this.#pixel, this.#height * this.#pixel);
-        frameRate(0.7);
+        frameRate(8);
     }
     
     getPixel(){
@@ -47,7 +47,6 @@ class Game {
                     this.#population.snakes[i].grow();
                     this.#population.snakes[i].setFruitPos(Math.floor(Math.random() * (this.getWidth() - 2) + 2), Math.floor(Math.random() * (this.getHeight() - 2) + 2));
                 }
-                //this.#population.snakes[i].follow();
                 this.#population.snakes[i].think();
                 this.#population.snakes[i].checkCollision();
             }

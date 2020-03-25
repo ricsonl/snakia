@@ -10,15 +10,18 @@ class Population {
     #bestScore = undefined;
     #bestBrain = undefined;
 
+    #lastDists = undefined;
+
     constructor(s, g) {
         if (s instanceof Population){
             this.game = s.game;
             this.#size = s.getSize();
-            this.snakes = s.snakes.slice();
+            this.snakes = s.getSnakes();
             this.#backup = s.getBackup();
             this.#fitness = s.getFitness();
             this.#bestScore = s.getBestScore();
             this.#bestBrain = s.getBestBrain();
+            this.#lastDists = s.getLastDists();
         } else {
             this.game = g;
             this.#size = s;
@@ -31,6 +34,12 @@ class Population {
             this.#fitness = 0;
             this.#bestScore = 0;
             this.#bestBrain = this.snakes[0].getBrain();
+
+            this.#lastDists = [];
+            for (let i = 0; i < this.#size; i++) {
+                this.#lastDists.push(this.snakes[i].distToFruit());
+            }
+            console.log(this.#lastDists);
         }
     }
 
@@ -53,6 +62,13 @@ class Population {
             bestIndex = i;
         }
         return this.#backup[bestIndex]['brain'];
+    }
+    getLastDists(){
+        return this.#lastDists.slice();
+    }
+
+    updateSnakeScore(i){
+
     }
 
     checkBest(i){
@@ -110,7 +126,6 @@ class Population {
     }
 
     nextGeneration() {
-        //console.log(this.getBestScore());
         this.calculateFitness();
         let next = new Population(this.#size, this.game);
         for (let i = 0; i < this.#size; i++) {
