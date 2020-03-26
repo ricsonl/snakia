@@ -58,7 +58,7 @@ class Population {
     checkBest(){
         for (let i = 0; i < this.snakes.length; i++)
             if(this.snakes[i].getScore() > this.#bestScore){
-                this.#bestScore = this.snakes[i].getScore();
+                this.#bestScore = this.snakes[i].getBody().length - 2;
                 this.#bestBrain = this.snakes[i].getBrain();
             }
     }
@@ -108,6 +108,9 @@ class Population {
 
     nextGeneration() {
         this.calculateFitness();
+        console.log('best: ', this.#bestScore);
+        //console.log('fitness: ', this.#fitness);
+        console.log('--------------------------------');
         let next = new Population(this.#size, this.game);
         for (let i = 0; i < this.#size; i++) {
             next.snakes[i] = this.pickOne();

@@ -42,17 +42,17 @@ class Game {
     evolve(cycles, dists){
         this.display(dists);
         for (let c = 0; c < cycles; c++) {
+            for (let i = 0; i < this.#population.snakes.length; i++)
+                if (this.#population.snakes[i].isDead()) {
+                    this.#population.removeSnake(i);
+                    i--;
+                }
+
             for (let i = 0; i < this.#population.snakes.length; i++) {
                 this.#population.snakes[i].update();
                 this.#population.snakes[i].think();
                 this.#population.snakes[i].checkCollision();
             }
-
-            for (let i = 0; i < this.#population.snakes.length; i++)
-                if (this.#population.snakes[i].isDead()){
-                    this.#population.removeSnake(i);
-                    i--;
-                }
 
             this.#population.checkBest();
 
@@ -68,9 +68,11 @@ class Game {
         clear();
         background(this.getColor());
         for (let i = 0; i < this.#population.snakes.length; i++){
-            this.#population.snakes[i].display();
-            if(lines)
-                this.#population.snakes[i].drawLines();
+            if (!this.#population.snakes[i].isDead()){
+                this.#population.snakes[i].display();
+                if (lines)
+                    this.#population.snakes[i].drawLines();
+            }
         }
     }
 

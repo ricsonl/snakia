@@ -1,6 +1,6 @@
 
 function setup(){
-    game = new Game(350);
+    game = new Game(100);
     slider = createSlider(1, 100, 1);
 }
 

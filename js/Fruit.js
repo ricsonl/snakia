@@ -13,8 +13,8 @@ class Fruit {
         this.game = g;
 
         const margin = 4;
-        const x = Math.floor(Math.random() * (this.game.getWidth() - margin) + margin/2);
-        const y = Math.floor(Math.random() * (this.game.getHeight() - margin) + margin/2);
+        const x = Math.round(Math.random() * (this.game.getWidth() - margin) + margin/2);
+        const y = Math.round(Math.random() * (this.game.getHeight() - margin) + margin/2);
         this.#pos = { x: x*g.getPixel(), y: y*g.getPixel() };
 
         this.#color = c;

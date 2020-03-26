@@ -59,7 +59,7 @@ class Snake {
             this.#dir = 'U';
             this.#lastDist = this.distToFruit();
             this.#dist = this.distToFruit();
-            this.#brain = new NeuralNetwork(6, 5, 3);
+            this.#brain = new NeuralNetwork(6, 6, 3);
 
             this.#score = 0;
             this.#dead = false;
@@ -209,10 +209,10 @@ class Snake {
         const head = this.#body[0];
         for(let o = 0; o < this.#obstacles.length; o++){
             if (
-                this.#dir == 'U' && head.x == this.#obstacles[o][2].x && head.y > this.#obstacles[o][2].y ||
-                this.#dir == 'R' && head.y == this.#obstacles[o][2].y && head.x < this.#obstacles[o][2].x ||
-                this.#dir == 'D' && head.x == this.#obstacles[o][2].x && head.y < this.#obstacles[o][2].y ||
-                this.#dir == 'L' && head.y == this.#obstacles[o][2].y && head.x > this.#obstacles[o][2].x
+                this.#dir == 'U' && head.x == this.#obstacles[o][2].x && head.y >= this.#obstacles[o][2].y ||
+                this.#dir == 'R' && head.y == this.#obstacles[o][2].y && head.x <= this.#obstacles[o][2].x ||
+                this.#dir == 'D' && head.x == this.#obstacles[o][2].x && head.y <= this.#obstacles[o][2].y ||
+                this.#dir == 'L' && head.y == this.#obstacles[o][2].y && head.x >= this.#obstacles[o][2].x
             ) { return this.#obstacles[o]; }   
         }
     }
@@ -220,10 +220,10 @@ class Snake {
         const head = this.#body[0];
         for(let o = 0; o < this.#obstacles.length; o++){
             if (
-                this.#dir == 'U' && head.y == this.#obstacles[o][2].y && head.x < this.#obstacles[o][2].x ||
-                this.#dir == 'R' && head.x == this.#obstacles[o][2].x && head.y < this.#obstacles[o][2].y ||
-                this.#dir == 'D' && head.y == this.#obstacles[o][2].y && head.x > this.#obstacles[o][2].x ||
-                this.#dir == 'L' && head.x == this.#obstacles[o][2].x && head.y > this.#obstacles[o][2].y
+                this.#dir == 'U' && head.y == this.#obstacles[o][2].y && head.x <= this.#obstacles[o][2].x ||
+                this.#dir == 'R' && head.x == this.#obstacles[o][2].x && head.y <= this.#obstacles[o][2].y ||
+                this.#dir == 'D' && head.y == this.#obstacles[o][2].y && head.x >= this.#obstacles[o][2].x ||
+                this.#dir == 'L' && head.x == this.#obstacles[o][2].x && head.y >= this.#obstacles[o][2].y
             ) { return this.#obstacles[o]; }     
         }
     }
@@ -231,10 +231,10 @@ class Snake {
         const head = this.#body[0];
         for(let o = 0; o < this.#obstacles.length; o++){
             if (
-                this.#dir == 'U' && head.y == this.#obstacles[o][2].y && head.x > this.#obstacles[o][2].x ||
-                this.#dir == 'R' && head.x == this.#obstacles[o][2].x && head.y > this.#obstacles[o][2].y ||
-                this.#dir == 'D' && head.y == this.#obstacles[o][2].y && head.x < this.#obstacles[o][2].x ||
-                this.#dir == 'L' && head.x == this.#obstacles[o][2].x && head.y < this.#obstacles[o][2].y
+                this.#dir == 'U' && head.y == this.#obstacles[o][2].y && head.x >= this.#obstacles[o][2].x ||
+                this.#dir == 'R' && head.x == this.#obstacles[o][2].x && head.y >= this.#obstacles[o][2].y ||
+                this.#dir == 'D' && head.y == this.#obstacles[o][2].y && head.x <= this.#obstacles[o][2].x ||
+                this.#dir == 'L' && head.x == this.#obstacles[o][2].x && head.y <= this.#obstacles[o][2].y
             ) { return this.#obstacles[o]; }    
         }
     }
@@ -334,7 +334,7 @@ class Snake {
         var obs;
         for(let i = 0; i < this.#obstacles.length; i++){
             obs = this.#obstacles[i];
-            if (obs[0] != 1 && JSON.stringify(head) == JSON.stringify(obs[2]))
+            if (obs[0] == 0 && JSON.stringify(head) == JSON.stringify(obs[2]))
                 this.#dead = true;
         }
     }
@@ -349,10 +349,10 @@ class Snake {
         this.#lastDist = this.#dist;
         this.#dist = this.distToFruit();
  
-        if(this.#dist < this.#lastDist) this.#score += 1;
-        else if(this.#dist > this.#lastDist) this.#score -= 1.5;
+        if(this.#dist < this.#lastDist) this.#score += 10;
+        else if (this.#dist > this.#lastDist) this.#score -= 15;
 
-        if(this.#score < -4) this.#dead = true;
+        if(this.#score < 0) this.#dead = true;
     }
 
     follow(){
@@ -373,7 +373,7 @@ class Snake {
 
         let inputs = [  
             ah[0], ri[0], le[0], 
-            ah[1], ri[1], le[1]
+            ah[1], ri[1], le[1] 
         ];
 
         const output = this.#brain.predict(inputs);
