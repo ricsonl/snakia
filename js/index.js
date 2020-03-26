@@ -1,7 +1,7 @@
 
 function setup(){
-    game = new Game(100);
-    slider = createSlider(1, 100, 1);
+    game = new Game(350);
+    slider = createSlider(1, 1000, 1);
 }
 
 function draw(){

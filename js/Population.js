@@ -1,24 +1,35 @@
+function mutateFunc(x) {
+    if (random(1) < 0.1) {
+        let offset = randomGaussian() * 0.5;
+        let newx = x + offset;
+        return newx;
+    } else {
+        return x;
+    }
+}
+
 class Population {
     snakes = undefined;
 
     game = undefined;
 
     #size = undefined;
-    #backup = undefined;
 
     #fitness = undefined;
-    #bestScore = undefined;
-    #bestBrain = undefined;
 
     constructor(s, g) {
         if (s instanceof Population){
             this.game = s.game;
             this.#size = s.getSize();
             this.snakes = s.getSnakes();
-            this.#backup = s.getBackup();
-            this.#fitness = s.getFitness();
-            this.#bestScore = s.getBestScore();
-            this.#bestBrain = s.getBestBrain();
+        } else if (s instanceof Array){
+            this.game = g;
+            this.#size = s.length;
+            this.snakes = [];
+            for (let i = 0; i < this.#size; i++) {
+                const randColor = color("hsl(" + Math.round(360 * i / this.#size) + ",80%,50%)");
+                this.snakes.push(s[i]);
+            }
         } else {
             this.game = g;
             this.#size = s;
@@ -27,94 +38,42 @@ class Population {
                 const randColor = color("hsl(" + Math.round(360 * i / this.#size) + ",80%,50%)");
                 this.snakes.push(new Snake(randColor, this));
             }
-            this.#backup = [];
-            this.#fitness = 0;
-            this.#bestScore = 0;
-            this.#bestBrain = this.snakes[0].getBrain();
         }
     }
 
     getSize(){
         return this.#size.valueOf();
     }
-    getBackup(){
-        return JSON.parse(JSON.stringify(this.#backup));
-    }
     getFitness(){
         return this.#fitness.valueOf();
     }
-    getBestScore(){
-        return this.#bestScore.valueOf();
-    }
-    getBestBrain(){
-        let bestIndex = 0;
-        for (let i = 1; i < this.#backup.length; i++) {
-            if (this.#backup[i]['score'] > this.#backup[bestIndex]['score'])
-            bestIndex = i;
-        }
-        return this.#backup[bestIndex]['brain'];
-    }
+    
+    replicate(best){
 
-    checkBest(){
-        for (let i = 0; i < this.snakes.length; i++)
-            if(this.snakes[i].getScore() > this.#bestScore){
-                this.#bestScore = this.snakes[i].getBody().length - 2;
-                this.#bestBrain = this.snakes[i].getBrain();
-            }
-    }
+        let childs = [];
+        let child;
+        let parentBrain;
+        let parentColor;
+        while(childs.length < this.#size){
+            let rand = Math.floor(Math.random() * best.length);
+            parentBrain = best[rand].getBrain();
+            parentColor = best[rand].getColor();
 
-    removeSnake(i) {
-        const deadSnake = this.snakes.splice(i, 1)[0];
-        this.#backup.push({
-            'brain': deadSnake.getBrain(),
-            'score': deadSnake.getScore(),
-            'fitness': undefined,
-            'color': deadSnake.getColor()
-        });
-    }
+            child = new Snake(parentColor, this);
+            parentBrain.mutate(mutateFunc);
+            child.setBrain(parentBrain);
 
-    calculateFitness() {
-        for (let i = 0; i < this.#backup.length; i++) {
-            this.#backup[i]['score'] = Math.pow(this.#backup[i]['score'], 2);
+            childs.push(child);
         }
 
-        let sum = 0;
-        for (let i = 0; i < this.#backup.length; i++) {
-            sum += this.#backup[i]['score'];
-        }
-        this.#fitness = sum;
-
-        for (let i = 0; i < this.#backup.length; i++) {
-            this.#backup[i]['fitness'] = this.#backup[i]['score'] / this.#fitness;
-        }
-    }
-
-    pickOne() {
-        let index = 0;
-        let r = random(1);
-        while (r > 0) {
-            r -= this.#backup[index]['fitness'];
-            index++;
-        }
-        index--;
-
-        const childBrain = this.#backup[index]['brain'];
-        const childColor = this.#backup[index]['color'];
-        let child = new Snake(childColor, this);
-        child.setBrain(childBrain);
-        child.mutate();
-        return child;
+        return childs;
     }
 
     nextGeneration() {
-        this.calculateFitness();
-        console.log('best: ', this.#bestScore);
-        //console.log('fitness: ', this.#fitness);
-        console.log('--------------------------------');
-        let next = new Population(this.#size, this.game);
-        for (let i = 0; i < this.#size; i++) {
-            next.snakes[i] = this.pickOne();
-        }
-        return next;
+        const perc = 0.1;
+        const best = this.snakes.sort((a, b) => (a.getScore() < b.getScore()) ? 1 : -1).slice(0, Math.floor(perc * this.#size));
+        const nextSnakes = this.replicate(best);
+        let nextGen = new Population(nextSnakes, this.game);
+        return nextGen;
     }
 }

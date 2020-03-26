@@ -1,13 +1,3 @@
-function mutateFunc(x) {
-    if (random(1) < 0.1) {
-        let offset = randomGaussian() * 0.5;
-        let newx = x + offset;
-        return newx;
-    } else {
-        return x;
-    }
-}
-
 class Snake {
     population = undefined;
 
@@ -59,7 +49,7 @@ class Snake {
             this.#dir = 'U';
             this.#lastDist = this.distToFruit();
             this.#dist = this.distToFruit();
-            this.#brain = new NeuralNetwork(6, 6, 3);
+            this.#brain = new NeuralNetwork(6, 5, 3);
 
             this.#score = 0;
             this.#dead = false;
@@ -341,7 +331,7 @@ class Snake {
 
     update(){
         if (this.ate()) {
-            this.#score += 100;
+            this.#score += 50;
             this.grow();
             this.setFruitPos(Math.floor(Math.random() * (this.population.game.getWidth() - 2) + 2), Math.floor(Math.random() * (this.population.game.getHeight() - 2) + 2));
         }
@@ -349,8 +339,8 @@ class Snake {
         this.#lastDist = this.#dist;
         this.#dist = this.distToFruit();
  
-        if(this.#dist < this.#lastDist) this.#score += 10;
-        else if (this.#dist > this.#lastDist) this.#score -= 15;
+        if(this.#dist < this.#lastDist) this.#score += 1 * (this.#body.length - 1);
+        else if (this.#dist > this.#lastDist) this.#score -= 1.5 * (this.#body.length - 1);
 
         if(this.#score < 0) this.#dead = true;
     }
@@ -373,7 +363,7 @@ class Snake {
 
         let inputs = [  
             ah[0], ri[0], le[0], 
-            ah[1], ri[1], le[1] 
+            ah[1], ri[1], le[1],
         ];
 
         const output = this.#brain.predict(inputs);
@@ -389,8 +379,5 @@ class Snake {
                 break;
         }
         this.updateObstacles();
-    }
-    mutate(){
-        this.#brain.mutate(mutateFunc);
     }
 }

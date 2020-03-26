@@ -9,7 +9,7 @@ class Game {
     #generation = undefined;
 
     constructor(s){
-        this.#pixel = 20;
+        this.#pixel = 15;
 
         this.#height = Math.floor((windowHeight*98/100) / this.#pixel);
         this.#width = Math.floor((windowWidth*4/5) / this.#pixel);
@@ -41,25 +41,23 @@ class Game {
 
     evolve(cycles, dists){
         this.display(dists);
-        for (let c = 0; c < cycles; c++) {
-            for (let i = 0; i < this.#population.snakes.length; i++)
-                if (this.#population.snakes[i].isDead()) {
-                    this.#population.removeSnake(i);
-                    i--;
+        for (let c = 0; c < cycles; c++){
+            for (let i = 0; i < this.#population.snakes.length; i++){
+                if (!this.#population.snakes[i].isDead()){
+                    this.#population.snakes[i].update();
+                    this.#population.snakes[i].think();
+                    this.#population.snakes[i].checkCollision();
                 }
-
-            for (let i = 0; i < this.#population.snakes.length; i++) {
-                this.#population.snakes[i].update();
-                this.#population.snakes[i].think();
-                this.#population.snakes[i].checkCollision();
             }
 
-            this.#population.checkBest();
-
-            if (this.#population.snakes.length == 0) {
-                this.#population = this.#population.nextGeneration();
-                this.#generation++;
-                break;
+            for (let i = 0; i < this.#population.snakes.length; i++){
+                if (!this.#population.snakes[i].isDead())
+                    break;
+                if (i == this.#population.snakes.length - 1) {
+                    this.#population = this.#population.nextGeneration();
+                    this.#generation++;
+                    c = cycles;
+                }
             }
         }
     }
