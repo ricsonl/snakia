@@ -5,7 +5,7 @@ function setup(){
 }
 
 function draw(){
-    game.evolve(true);
+    game.evolve(document.getElementById("lines").checked);
 }
 
 /*function keyPressed() {

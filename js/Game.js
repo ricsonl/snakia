@@ -8,12 +8,13 @@ class Game {
     #population = undefined;
 
     #canvas = undefined;
-    #title = undefined;
     #generation = undefined;
     #velocitySlider = undefined;
     #bestSoFar = undefined;
     
     #generationTxt = undefined;
+    #bestTxt = undefined;
+    #aliveTxt = undefined;
     #bestSoFarTxt = undefined;
     #velocityTxt = undefined;
 
@@ -30,23 +31,25 @@ class Game {
         this.#canvas = createCanvas(this.#width * this.#pixel, this.#height * this.#pixel);
         this.#canvas.style('border-radius', '10px');
 
-        this.#title = createElement('h2', 'Snakia');
-        
         this.#generation = 1;
-        this.#generationTxt = createP('Generation: ' + this.#generation);
+        this.#generationTxt = createP(this.#generation);
+
+        this.#bestTxt = createP(this.#population.getBestEat());
+        this.#aliveTxt = createP(this.#population.getAlive() + ' / ' + this.#population.getSize());
 
         this.#bestSoFar = 0;
-        this.#bestSoFarTxt = createP('Best so far: ' + this.#bestSoFar);
+        this.#bestSoFarTxt = createP(this.#bestSoFar);
 
         this.#velocitySlider = createSlider(1, 300, 1);
         this.#velocityTxt = createP(this.#velocitySlider.value() + 'x');
         
         this.#canvas.parent("canvas");
-        this.#title.parent("config");
-        this.#generationTxt.parent("config");
-        this.#bestSoFarTxt.parent("config");
-        this.#velocitySlider.parent("config");
-        this.#velocityTxt.parent("config");
+        this.#generationTxt.parent("gen");
+        this.#bestTxt.parent("best");
+        this.#aliveTxt.parent("alive");
+        this.#bestSoFarTxt.parent("bestSF");
+        this.#velocitySlider.parent("velSl");
+        this.#velocityTxt.parent("velTxt");
     }
     
     getPixel(){
@@ -66,7 +69,7 @@ class Game {
     }
 
     updateBestSoFar(){
-        const best = this.#population.bestEater();
+        const best = this.#population.getBestEat();
         if(best > this.#bestSoFar)
             this.#bestSoFar = best;
     }
@@ -82,19 +85,23 @@ class Game {
                     this.#population.snakes[i].checkCollision();
                 }
             }
+            this.#population.updateBestEat();
+            this.#population.updateAlive();
+            this.updateBestSoFar();
+
+            this.#bestTxt.html(this.#population.getBestEat());
+            this.#aliveTxt.html(this.#population.getAlive() + ' / ' + this.#population.getSize());
+            this.#bestSoFarTxt.html(this.#bestSoFar);
 
             for (let i = 0; i < this.#population.snakes.length; i++){
                 if (!this.#population.snakes[i].isDead())
                     break;
                 if (i == this.#population.snakes.length - 1) {
-                    this.updateBestSoFar();
-                    this.#bestSoFarTxt.html('Best so far: ' + this.#bestSoFar);
-
-                    this.#generationTxt.html('Generation: ' + this.#generation);
-
                     this.#population = this.#population.nextGeneration();
                     this.#generation++;
                     c = this.#velocitySlider.value();
+
+                    this.#generationTxt.html(this.#generation);
                 }
             }
         }

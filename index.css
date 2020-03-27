@@ -1,17 +1,50 @@
 body {
-    background-color: #111;
+    background-color: #222;
+    font-family: sans-serif;
 }
-#container {
-    background-color: rgb(12, 0, 90);
+
+p {
+    letter-spacing: 0.6px;
+    margin: 12 0;
+}
+
+span {
     display: flex;
     flex-direction: row;
-    margin: 0 auto;
+}
+
+span > span {
+    font-weight: bold;
+}
+
+input[type=range]{
+    width: 95%;
+}
+
+input[type=checkbox]{
+    margin: 6 0;
+}
+
+#container {
+    display: flex;
+    flex-direction: row;
+    margin: 20 auto;
+    width: 100%;
 }
 #config {
-    color: white;
-    background-color: deeppink;
+    color: #ccc;
+    background-color: #333;
+    border-radius: 10px;
+    border: 2px solid #444;
     display: flex;
     flex-direction: column;
-    margin: 10;
+    margin: 0 10;
+    padding: 10px;
     width: 100%;
+    line-height: 0.5px;
+}
+#adj {
+    display: flex;
+    flex-direction: row;
+    margin: 15 0 0 0;
 }

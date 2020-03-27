@@ -15,14 +15,16 @@ class Population {
 
     #size = undefined;
 
-    #bestEater = undefined;
+    #bestEat = undefined;
+    #alive = undefined;
 
     constructor(s, g) {
         if (s instanceof Population){
             this.snakes = s.getSnakes();
             this.game = s.game;
             this.#size = s.getSize();
-            this.#bestEater = s.getBestEater();
+            this.#bestEat = s.getBestEat();
+            this.#alive = s.getAlive();
         } else if (s instanceof Array){
             this.game = g;
             this.#size = s.length;
@@ -31,6 +33,10 @@ class Population {
                 const randColor = color("hsl(" + Math.round(360 * i / this.#size) + ",80%,50%)");
                 this.snakes.push(s[i]);
             }
+            this.#bestEat = 0;
+            this.#alive = this.#size;
+            this.updateBestEat();
+            this.updateAlive();
         } else {
             this.game = g;
             this.#size = s;
@@ -39,21 +45,37 @@ class Population {
                 const randColor = color("hsl(" + Math.round(360 * i / this.#size) + ",80%,50%)");
                 this.snakes.push(new Snake(randColor, this));
             }
+            this.#bestEat = 0;
+            this.#alive = this.#size;
+            this.updateBestEat();
+            this.updateAlive();
         }
     }
 
     getSize(){
         return this.#size.valueOf();
     }
-    
-    bestEater(){
-        let best = 0;
+    getBestEat(){
+        return this.#bestEat.valueOf();
+    }
+    getAlive(){
+        return this.#alive.valueOf();
+    }
+     
+    updateBestEat(){
         for (let i = 0; i < this.#size; i++){
-            if(this.snakes[i].fruitsEaten() > best){
-                best = this.snakes[i].fruitsEaten();
+            if(this.snakes[i].fruitsEaten() > this.#bestEat){
+                this.#bestEat = this.snakes[i].fruitsEaten();
             }
         }
-        return best;
+    }
+    updateAlive(){
+        let alive = 0;
+        for (let i = 0; i < this.#size; i++){
+            if(!this.snakes[i].isDead())
+                alive++;
+        }
+        if(alive < this.#alive) this.#alive = alive;
     }
 
     replicate(best){
