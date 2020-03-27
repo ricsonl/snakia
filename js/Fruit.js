@@ -12,10 +12,7 @@ class Fruit {
         } 
         this.game = g;
 
-        const margin = 4;
-        const x = Math.round(Math.random() * (this.game.getWidth() - margin) + margin/2);
-        const y = Math.round(Math.random() * (this.game.getHeight() - margin) + margin/2);
-        this.#pos = { x: x*g.getPixel(), y: y*g.getPixel() };
+        this.setRandomPos();
 
         this.#color = c;
     }
@@ -27,16 +24,19 @@ class Fruit {
         return color(this.#color);
     }
 
-    setPos(x, y) {
-        this.#pos = { x: x*this.game.getPixel(), y: y*this.game.getPixel() };
+    setRandomPos() {
+        const margin = 5;
+        const x = Math.round(Math.random() * (this.game.getWidth() - margin) + margin / 2);
+        const y = Math.round(Math.random() * (this.game.getHeight() - margin) + margin / 2);
+        this.#pos = { x: x * this.game.getPixel(), y: y * this.game.getPixel() };
     }
     setColor(c) {
         this.#color = c;
     }
 
     display() {
-        stroke(this.#color);
-        strokeWeight(this.game.getPixel()); 
+        //stroke(this.#color);
+        //strokeWeight(this.game.getPixel()); 
         line(this.#pos.x, this.#pos.y, this.#pos.x, this.#pos.y);
     }
 }

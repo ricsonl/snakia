@@ -15,13 +15,14 @@ class Population {
 
     #size = undefined;
 
-    #fitness = undefined;
+    #bestEater = undefined;
 
     constructor(s, g) {
         if (s instanceof Population){
+            this.snakes = s.getSnakes();
             this.game = s.game;
             this.#size = s.getSize();
-            this.snakes = s.getSnakes();
+            this.#bestEater = s.getBestEater();
         } else if (s instanceof Array){
             this.game = g;
             this.#size = s.length;
@@ -44,12 +45,18 @@ class Population {
     getSize(){
         return this.#size.valueOf();
     }
-    getFitness(){
-        return this.#fitness.valueOf();
-    }
     
-    replicate(best){
+    bestEater(){
+        let best = 0;
+        for (let i = 0; i < this.#size; i++){
+            if(this.snakes[i].fruitsEaten() > best){
+                best = this.snakes[i].fruitsEaten();
+            }
+        }
+        return best;
+    }
 
+    replicate(best){
         let childs = [];
         let child;
         let parentBrain;

@@ -1,11 +1,11 @@
 
 function setup(){
     game = new Game(350);
-    slider = createSlider(1, 1000, 1);
+    frameRate(8);
 }
 
 function draw(){
-    game.evolve(slider.value(), true);
+    game.evolve(true);
 }
 
 /*function keyPressed() {

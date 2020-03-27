@@ -89,6 +89,9 @@ class Snake {
         return this.#obstacles.slice();
     }
 
+    fruitsEaten(){
+        return this.#body.length - 2;
+    }
     setBrain(b){
         this.#brain = b;
     }
@@ -98,9 +101,6 @@ class Snake {
     setScore(s){
         this.#score = s;
     }
-    setFruitPos(x, y){
-        this.#fruit.setPos(x, y);
-    }
 
     drawLines(){
         const head = this.#body[0];
@@ -109,7 +109,7 @@ class Snake {
         const pointR = this.lookRight()[2];
         const pointL = this.lookLeft()[2];
         
-        strokeWeight(0.6);
+        strokeWeight(0.5);
         stroke(this.#color);
         line(head.x, head.y, pointA.x, pointA.y);
         line(head.x, head.y, pointR.x, pointR.y);
@@ -123,9 +123,9 @@ class Snake {
     }
 
     display(){
-        stroke(this.getColor());
         strokeWeight(this.population.game.getPixel());
-        const body = this.getBody();
+        stroke(this.#color);
+        const body = this.#body;
 
         let prev = body[0];
         for(let i=0; i<body.length; i++){
@@ -333,7 +333,7 @@ class Snake {
         if (this.ate()) {
             this.#score += 50;
             this.grow();
-            this.setFruitPos(Math.floor(Math.random() * (this.population.game.getWidth() - 2) + 2), Math.floor(Math.random() * (this.population.game.getHeight() - 2) + 2));
+            this.#fruit.setRandomPos();
         }
 
         this.#lastDist = this.#dist;
