@@ -4,10 +4,12 @@
     <td>
       <img src="/readmeFiles/01.gif" width="500" /><br/>
       <h4>3rd gen<h4>
+      <p>best score: 3</p>
     </td>
     <td>
       <img src="/readmeFiles/02.gif" width="500" /><br/>
       <h4>110th gen<h4>
+      <p>best score: 127</p>
     </td>
   </tr>
 </table>
